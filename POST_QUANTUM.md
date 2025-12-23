@@ -1,10 +1,10 @@
 # Post-Quantum Cryptography Implementation
 
-This document describes the comprehensive post-quantum cryptography (PQC) implementation in rbottle.
+This document describes the comprehensive post-quantum cryptography (PQC) implementation in rust-bottle.
 
 ## Overview
 
-rbottle includes full support for NIST-standardized post-quantum cryptography algorithms:
+rust-bottle includes full support for NIST-standardized post-quantum cryptography algorithms:
 
 - **ML-KEM** (Module-Lattice-Based Key-Encapsulation Mechanism): For encryption
 - **ML-DSA** (Module-Lattice-Based Digital Signature Algorithm): For signatures
@@ -84,7 +84,7 @@ SLH-DSA provides post-quantum signatures based on hash functions. Three security
 
 ```rust
 #[cfg(feature = "ml-kem")]
-use rbottle::keys::MlKem768Key;
+use rust_bottle::keys::MlKem768Key;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -106,7 +106,7 @@ let priv_key = key.private_key_bytes(); // 2400 bytes
 
 ```rust
 #[cfg(feature = "post-quantum")]
-use rbottle::keys::MlDsa44Key;
+use rust_bottle::keys::MlDsa44Key;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -127,7 +127,7 @@ assert!(key.verify(message, &signature).is_ok());
 
 ```rust
 #[cfg(feature = "post-quantum")]
-use rbottle::keys::SlhDsa128sKey;
+use rust_bottle::keys::SlhDsa128sKey;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -150,8 +150,8 @@ assert!(key.verify(message, &signature).is_ok());
 
 ```rust
 #[cfg(feature = "ml-kem")]
-use rbottle::ecdh::mlkem768_encrypt;
-use rbottle::keys::MlKem768Key;
+use rust_bottle::ecdh::mlkem768_encrypt;
+use rust_bottle::keys::MlKem768Key;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -165,8 +165,8 @@ let ciphertext = mlkem768_encrypt(rng, plaintext, &key.public_key_bytes()).unwra
 
 ```rust
 #[cfg(feature = "ml-kem")]
-use rbottle::ecdh::mlkem1024_encrypt;
-use rbottle::keys::MlKem1024Key;
+use rust_bottle::ecdh::mlkem1024_encrypt;
+use rust_bottle::keys::MlKem1024Key;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -182,8 +182,8 @@ Hybrid encryption provides both post-quantum and classical security by combining
 
 ```rust
 #[cfg(feature = "ml-kem")]
-use rbottle::ecdh::hybrid_encrypt_mlkem768_x25519;
-use rbottle::keys::{MlKem768Key, X25519Key};
+use rust_bottle::ecdh::hybrid_encrypt_mlkem768_x25519;
+use rust_bottle::keys::{MlKem768Key, X25519Key};
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -201,7 +201,7 @@ let ciphertext = hybrid_encrypt_mlkem768_x25519(
 
 // Decrypt (tries ML-KEM first, falls back to X25519)
 #[cfg(feature = "ml-kem")]
-use rbottle::ecdh::hybrid_decrypt_mlkem768_x25519;
+use rust_bottle::ecdh::hybrid_decrypt_mlkem768_x25519;
 let mlkem_sec = mlkem_key.private_key_bytes();
 let x25519_sec: [u8; 32] = x25519_key.private_key_bytes().try_into().unwrap();
 let decrypted = hybrid_decrypt_mlkem768_x25519(
@@ -221,7 +221,7 @@ Post-quantum keys work seamlessly with the Bottle API:
 
 ```rust
 #[cfg(feature = "post-quantum")]
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut bottle = Bottle::new(b"Post-quantum secure".to_vec());
@@ -261,8 +261,8 @@ The `ecdh_encrypt` and `ecdh_decrypt` functions automatically detect key types b
 
 ```rust
 #[cfg(feature = "ml-kem")]
-use rbottle::ecdh::ecdh_encrypt;
-use rbottle::keys::MlKem768Key;
+use rust_bottle::ecdh::ecdh_encrypt;
+use rust_bottle::keys::MlKem768Key;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -278,7 +278,7 @@ Post-quantum keys can be stored in keychains:
 
 ```rust
 #[cfg(feature = "post-quantum")]
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut keychain = Keychain::new();
@@ -301,7 +301,7 @@ Post-quantum keys can be used in IDCards:
 
 ```rust
 #[cfg(feature = "post-quantum")]
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -365,7 +365,7 @@ This means post-quantum keys can be used anywhere classical keys are used, provi
 
 ```rust
 #[cfg(feature = "post-quantum")]
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 // Works with any signer type

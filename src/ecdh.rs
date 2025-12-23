@@ -29,8 +29,8 @@ use x25519_dalek::{PublicKey as X25519PublicKey, StaticSecret};
 /// # Example
 ///
 /// ```rust
-/// use rbottle::ecdh::ecdh_encrypt_p256;
-/// use rbottle::keys::EcdsaP256Key;
+/// use rust_bottle::ecdh::ecdh_encrypt_p256;
+/// use rust_bottle::keys::EcdsaP256Key;
 /// use rand::rngs::OsRng;
 ///
 /// let rng = &mut OsRng;
@@ -86,8 +86,8 @@ pub fn ecdh_encrypt_p256<R: RngCore + CryptoRng>(
 /// # Example
 ///
 /// ```rust
-/// use rbottle::ecdh::{ecdh_encrypt_p256, ecdh_decrypt_p256};
-/// use rbottle::keys::EcdsaP256Key;
+/// use rust_bottle::ecdh::{ecdh_encrypt_p256, ecdh_decrypt_p256};
+/// use rust_bottle::keys::EcdsaP256Key;
 /// use rand::rngs::OsRng;
 /// use p256::elliptic_curve::sec1::FromEncodedPoint;
 ///
@@ -155,8 +155,8 @@ pub fn ecdh_decrypt_p256(
 /// # Example
 ///
 /// ```rust
-/// use rbottle::ecdh::ecdh_encrypt_x25519;
-/// use rbottle::keys::X25519Key;
+/// use rust_bottle::ecdh::ecdh_encrypt_x25519;
+/// use rust_bottle::keys::X25519Key;
 /// use rand::rngs::OsRng;
 ///
 /// let rng = &mut OsRng;
@@ -217,8 +217,8 @@ pub fn ecdh_encrypt_x25519<R: RngCore>(
 /// # Example
 ///
 /// ```rust
-/// use rbottle::ecdh::{ecdh_encrypt_x25519, ecdh_decrypt_x25519};
-/// use rbottle::keys::X25519Key;
+/// use rust_bottle::ecdh::{ecdh_encrypt_x25519, ecdh_decrypt_x25519};
+/// use rust_bottle::keys::X25519Key;
 /// use rand::rngs::OsRng;
 ///
 /// let rng = &mut OsRng;
@@ -301,8 +301,8 @@ pub trait ECDHDecrypt {
 /// # Example
 ///
 /// ```rust
-/// use rbottle::ecdh::ecdh_encrypt;
-/// use rbottle::keys::X25519Key;
+/// use rust_bottle::ecdh::ecdh_encrypt;
+/// use rust_bottle::keys::X25519Key;
 /// use rand::rngs::OsRng;
 ///
 /// let rng = &mut OsRng;
@@ -367,8 +367,8 @@ pub fn ecdh_encrypt<R: RngCore + CryptoRng>(
 /// # Example
 ///
 /// ```rust
-/// use rbottle::ecdh::{ecdh_encrypt, ecdh_decrypt};
-/// use rbottle::keys::X25519Key;
+/// use rust_bottle::ecdh::{ecdh_encrypt, ecdh_decrypt};
+/// use rust_bottle::keys::X25519Key;
 /// use rand::rngs::OsRng;
 ///
 /// let rng = &mut OsRng;

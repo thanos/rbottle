@@ -1,11 +1,11 @@
 [package]
-name = "rbottle"
+name = "rust-bottle"
 version = "0.1.0"
 edition = "2021"
 authors = ["thanos vassilakis"]
 license = "MIT"
 description = "Rust implementation of Bottle protocol - layered message containers with encryption and signatures"
-repository = "https://github.com/thanos/rbottle"
+repository = "https://github.com/thanos/rust-bottle"
 
 [dependencies]
 # Cryptographic primitives

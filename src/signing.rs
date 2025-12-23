@@ -10,8 +10,8 @@ use rand::RngCore;
 /// # Example
 ///
 /// ```rust
-/// use rbottle::signing::Sign;
-/// use rbottle::keys::Ed25519Key;
+/// use rust_bottle::signing::Sign;
+/// use rust_bottle::keys::Ed25519Key;
 /// use rand::rngs::OsRng;
 ///
 /// let rng = &mut OsRng;
@@ -43,8 +43,8 @@ pub trait Sign {
 /// # Example
 ///
 /// ```rust
-/// use rbottle::signing::{Sign, Verify};
-/// use rbottle::keys::Ed25519Key;
+/// use rust_bottle::signing::{Sign, Verify};
+/// use rust_bottle::keys::Ed25519Key;
 /// use rand::rngs::OsRng;
 ///
 /// let rng = &mut OsRng;

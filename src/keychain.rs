@@ -13,7 +13,7 @@ use std::collections::HashMap;
 /// # Example
 ///
 /// ```rust
-/// use rbottle::*;
+/// use rust_bottle::*;
 /// use rand::rngs::OsRng;
 ///
 /// let mut keychain = Keychain::new();
@@ -36,7 +36,7 @@ pub struct Keychain {
 /// Trait for keys that can be stored in a keychain.
 ///
 /// This trait extends `Sign` with methods for key identification. All key
-/// types in rbottle implement this trait, allowing them to be stored in
+/// types in rust-bottle implement this trait, allowing them to be stored in
 /// keychains.
 ///
 /// # Requirements
@@ -71,7 +71,7 @@ impl Keychain {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::Keychain;
+    /// use rust_bottle::Keychain;
     ///
     /// let keychain = Keychain::new();
     /// ```
@@ -93,7 +93,7 @@ impl Keychain {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::*;
+    /// use rust_bottle::*;
     /// use rand::rngs::OsRng;
     ///
     /// let mut keychain = Keychain::new();
@@ -116,7 +116,7 @@ impl Keychain {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::*;
+    /// use rust_bottle::*;
     /// use rand::rngs::OsRng;
     ///
     /// let mut keychain = Keychain::new();
@@ -149,7 +149,7 @@ impl Keychain {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::*;
+    /// use rust_bottle::*;
     /// use rand::rngs::OsRng;
     ///
     /// let mut keychain = Keychain::new();
@@ -202,7 +202,7 @@ impl Keychain {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::*;
+    /// use rust_bottle::*;
     /// use rand::rngs::OsRng;
     ///
     /// let mut keychain = Keychain::new();
@@ -232,7 +232,7 @@ impl Keychain {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::*;
+    /// use rust_bottle::*;
     /// use rand::rngs::OsRng;
     ///
     /// let mut keychain = Keychain::new();

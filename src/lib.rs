@@ -1,4 +1,4 @@
-//! # rbottle
+//! # rust-bottle
 //!
 //! Rust implementation of the Bottle protocol - layered message containers
 //! with encryption and signatures.
@@ -24,7 +24,7 @@
 //! ## Example
 //!
 //! ```rust
-//! use rbottle::*;
+//! use rust_bottle::*;
 //! use rand::rngs::OsRng;
 //!
 //! // Create and encrypt a message

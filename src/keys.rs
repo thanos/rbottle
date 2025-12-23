@@ -24,7 +24,7 @@ use pqcrypto_traits::sign::{PublicKey as PqcPublicKey, SecretKey as PqcSecretKey
 /// # Example
 ///
 /// ```rust
-/// use rbottle::keys::EcdsaP256Key;
+/// use rust_bottle::keys::EcdsaP256Key;
 /// use rand::rngs::OsRng;
 ///
 /// let rng = &mut OsRng;
@@ -54,7 +54,7 @@ impl EcdsaP256Key {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::keys::EcdsaP256Key;
+    /// use rust_bottle::keys::EcdsaP256Key;
     /// use rand::rngs::OsRng;
     ///
     /// let rng = &mut OsRng;
@@ -115,7 +115,7 @@ impl EcdsaP256Key {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::keys::EcdsaP256Key;
+    /// use rust_bottle::keys::EcdsaP256Key;
     /// use rand::rngs::OsRng;
     ///
     /// let rng = &mut OsRng;
@@ -182,8 +182,8 @@ impl Verify for EcdsaP256Key {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::keys::EcdsaP256Key;
-    /// use rbottle::signing::{Sign, Verify};
+    /// use rust_bottle::keys::EcdsaP256Key;
+    /// use rust_bottle::signing::{Sign, Verify};
     /// use rand::rngs::OsRng;
     ///
     /// let rng = &mut OsRng;
@@ -238,7 +238,7 @@ impl SignerKey for EcdsaP256Key {
 /// # Example
 ///
 /// ```rust
-/// use rbottle::keys::Ed25519Key;
+/// use rust_bottle::keys::Ed25519Key;
 /// use rand::rngs::OsRng;
 ///
 /// let rng = &mut OsRng;
@@ -268,7 +268,7 @@ impl Ed25519Key {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::keys::Ed25519Key;
+    /// use rust_bottle::keys::Ed25519Key;
     /// use rand::rngs::OsRng;
     ///
     /// let rng = &mut OsRng;
@@ -328,7 +328,7 @@ impl Ed25519Key {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::keys::Ed25519Key;
+    /// use rust_bottle::keys::Ed25519Key;
     /// use rand::rngs::OsRng;
     ///
     /// let rng = &mut OsRng;
@@ -390,8 +390,8 @@ impl Verify for Ed25519Key {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::keys::Ed25519Key;
-    /// use rbottle::signing::{Sign, Verify};
+    /// use rust_bottle::keys::Ed25519Key;
+    /// use rust_bottle::signing::{Sign, Verify};
     /// use rand::rngs::OsRng;
     ///
     /// let rng = &mut OsRng;
@@ -442,7 +442,7 @@ impl SignerKey for Ed25519Key {
 /// # Example
 ///
 /// ```rust
-/// use rbottle::keys::X25519Key;
+/// use rust_bottle::keys::X25519Key;
 /// use rand::rngs::OsRng;
 ///
 /// let rng = &mut OsRng;
@@ -472,7 +472,7 @@ impl X25519Key {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::keys::X25519Key;
+    /// use rust_bottle::keys::X25519Key;
     /// use rand::rngs::OsRng;
     ///
     /// let rng = &mut OsRng;
@@ -534,7 +534,7 @@ impl X25519Key {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::keys::X25519Key;
+    /// use rust_bottle::keys::X25519Key;
     /// use rand::rngs::OsRng;
     ///
     /// let rng = &mut OsRng;
@@ -568,7 +568,7 @@ impl X25519Key {
 ///
 /// ```rust
 /// #[cfg(feature = "post-quantum")]
-/// use rbottle::keys::MlKem768Key;
+/// use rust_bottle::keys::MlKem768Key;
 /// use rand::rngs::OsRng;
 ///
 /// #[cfg(feature = "post-quantum")]

@@ -1,6 +1,6 @@
-# rbottle API Reference
+# rust-bottle API Reference
 
-This document provides comprehensive API documentation with detailed examples for every public function and method in the rbottle library.
+This document provides comprehensive API documentation with detailed examples for every public function and method in the rust-bottle library.
 
 ## Table of Contents
 
@@ -29,7 +29,7 @@ Creates a new bottle with a message payload.
 
 **Example:**
 ```rust
-use rbottle::Bottle;
+use rust_bottle::Bottle;
 
 let message = b"Hello, world!".to_vec();
 let bottle = Bottle::new(message);
@@ -45,7 +45,7 @@ Returns a reference to the message payload. If encrypted, returns the encrypted 
 
 **Example:**
 ```rust
-use rbottle::Bottle;
+use rust_bottle::Bottle;
 
 let bottle = Bottle::new(b"Secret message".to_vec());
 let message_ref = bottle.message();
@@ -58,7 +58,7 @@ Checks if the bottle has any encryption layers.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut bottle = Bottle::new(b"Message".to_vec());
@@ -76,7 +76,7 @@ Checks if the bottle has any signature layers.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut bottle = Bottle::new(b"Message".to_vec());
@@ -95,7 +95,7 @@ Returns the number of encryption layers.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut bottle = Bottle::new(b"Message".to_vec());
@@ -120,7 +120,7 @@ Encrypts the bottle to a public key, adding a new encryption layer.
 
 **Example - Single Encryption:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut bottle = Bottle::new(b"Secret message".to_vec());
@@ -134,7 +134,7 @@ assert!(bottle.is_encrypted());
 
 **Example - Layered Encryption (Multiple Recipients):**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut bottle = Bottle::new(b"Multi-recipient message".to_vec());
@@ -155,7 +155,7 @@ assert_eq!(bottle.encryption_count(), 3);
 
 **Example - Using P-256 Keys:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut bottle = Bottle::new(b"P-256 encrypted message".to_vec());
@@ -172,7 +172,7 @@ Signs the bottle with a private key, adding a new signature layer.
 
 **Example - Single Signature:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut bottle = Bottle::new(b"Signed message".to_vec());
@@ -186,7 +186,7 @@ assert!(bottle.is_signed());
 
 **Example - Multiple Signatures:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut bottle = Bottle::new(b"Multi-signed message".to_vec());
@@ -212,7 +212,7 @@ assert_eq!(info.signers.len(), 3);
 
 **Example - Encrypted and Signed Bottle:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut bottle = Bottle::new(b"Encrypted and signed".to_vec());
@@ -239,7 +239,7 @@ Sets a metadata key-value pair. Metadata is not encrypted or signed.
 
 **Example:**
 ```rust
-use rbottle::Bottle;
+use rust_bottle::Bottle;
 
 let mut bottle = Bottle::new(b"Message".to_vec());
 
@@ -259,7 +259,7 @@ Retrieves a metadata value by key.
 
 **Example:**
 ```rust
-use rbottle::Bottle;
+use rust_bottle::Bottle;
 
 let mut bottle = Bottle::new(b"Message".to_vec());
 bottle.set_metadata("sender", "alice");
@@ -279,7 +279,7 @@ Serializes the bottle to bytes using bincode.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut bottle = Bottle::new(b"Message".to_vec());
@@ -300,7 +300,7 @@ Deserializes a bottle from bytes.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 // Create and serialize a bottle
@@ -328,7 +328,7 @@ Creates a new opener instance.
 
 **Example:**
 ```rust
-use rbottle::Opener;
+use rust_bottle::Opener;
 
 let opener = Opener::new();
 ```
@@ -339,7 +339,7 @@ Opens a bottle, decrypting all encryption layers if needed.
 
 **Example - Opening Unencrypted Bottle:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 
 let bottle = Bottle::new(b"Plain message".to_vec());
 let opener = Opener::new();
@@ -351,7 +351,7 @@ assert_eq!(message, b"Plain message");
 
 **Example - Opening Encrypted Bottle:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut bottle = Bottle::new(b"Secret message".to_vec());
@@ -369,7 +369,7 @@ assert_eq!(decrypted, b"Secret message");
 
 **Example - Opening Layered Encrypted Bottle:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut bottle = Bottle::new(b"Layered message".to_vec());
@@ -389,7 +389,7 @@ assert_eq!(decrypted, b"Layered message");
 
 **Example - Error Handling:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut bottle = Bottle::new(b"Secret".to_vec());
@@ -420,7 +420,7 @@ Gets information about a bottle without decrypting it.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut bottle = Bottle::new(b"Message".to_vec());
@@ -451,7 +451,7 @@ Checks if the bottle is signed by a specific public key.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut bottle = Bottle::new(b"Message".to_vec());
@@ -486,7 +486,7 @@ Generates a new ECDSA P-256 key pair.
 
 **Example:**
 ```rust
-use rbottle::keys::EcdsaP256Key;
+use rust_bottle::keys::EcdsaP256Key;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -499,7 +499,7 @@ Gets the public key in SEC1 uncompressed format (65 bytes).
 
 **Example:**
 ```rust
-use rbottle::keys::EcdsaP256Key;
+use rust_bottle::keys::EcdsaP256Key;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -514,7 +514,7 @@ Gets the private key bytes (32 bytes).
 
 **Example:**
 ```rust
-use rbottle::keys::EcdsaP256Key;
+use rust_bottle::keys::EcdsaP256Key;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -529,7 +529,7 @@ Reconstructs a key pair from private key bytes.
 
 **Example:**
 ```rust
-use rbottle::keys::EcdsaP256Key;
+use rust_bottle::keys::EcdsaP256Key;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -549,7 +549,7 @@ Generates a new Ed25519 key pair.
 
 **Example:**
 ```rust
-use rbottle::keys::Ed25519Key;
+use rust_bottle::keys::Ed25519Key;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -562,7 +562,7 @@ Gets the public key bytes (32 bytes).
 
 **Example:**
 ```rust
-use rbottle::keys::Ed25519Key;
+use rust_bottle::keys::Ed25519Key;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -577,7 +577,7 @@ Gets the private key bytes (32 bytes).
 
 **Example:**
 ```rust
-use rbottle::keys::Ed25519Key;
+use rust_bottle::keys::Ed25519Key;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -592,7 +592,7 @@ Reconstructs a key pair from private key bytes.
 
 **Example:**
 ```rust
-use rbottle::keys::Ed25519Key;
+use rust_bottle::keys::Ed25519Key;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -611,7 +611,7 @@ Generates a new X25519 key pair for ECDH encryption.
 
 **Example:**
 ```rust
-use rbottle::keys::X25519Key;
+use rust_bottle::keys::X25519Key;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -624,7 +624,7 @@ Gets the public key bytes (32 bytes).
 
 **Example:**
 ```rust
-use rbottle::keys::X25519Key;
+use rust_bottle::keys::X25519Key;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -639,7 +639,7 @@ Gets the private key bytes (32 bytes).
 
 **Example:**
 ```rust
-use rbottle::keys::X25519Key;
+use rust_bottle::keys::X25519Key;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -654,7 +654,7 @@ Reconstructs a key pair from private key bytes.
 
 **Example:**
 ```rust
-use rbottle::keys::X25519Key;
+use rust_bottle::keys::X25519Key;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -677,8 +677,8 @@ Encrypts plaintext to a public key using ECDH with automatic key type detection.
 
 **Example - X25519 Encryption:**
 ```rust
-use rbottle::ecdh::ecdh_encrypt;
-use rbottle::keys::X25519Key;
+use rust_bottle::ecdh::ecdh_encrypt;
+use rust_bottle::keys::X25519Key;
 use rand::rngs::OsRng;
 
 let plaintext = b"Secret message";
@@ -692,15 +692,15 @@ let bob_key = X25519Key::generate(rng);
 let ciphertext = ecdh_encrypt(rng, plaintext, &bob_key.public_key_bytes()).unwrap();
 
 // Bob decrypts
-use rbottle::ecdh::ecdh_decrypt;
+use rust_bottle::ecdh::ecdh_decrypt;
 let decrypted = ecdh_decrypt(&ciphertext, &bob_key.private_key_bytes()).unwrap();
 assert_eq!(decrypted, plaintext);
 ```
 
 **Example - P-256 Encryption:**
 ```rust
-use rbottle::ecdh::ecdh_encrypt;
-use rbottle::keys::EcdsaP256Key;
+use rust_bottle::ecdh::ecdh_encrypt;
+use rust_bottle::keys::EcdsaP256Key;
 use rand::rngs::OsRng;
 
 let plaintext = b"P-256 encrypted message";
@@ -709,7 +709,7 @@ let rng = &mut OsRng;
 let key = EcdsaP256Key::generate(rng);
 let ciphertext = ecdh_encrypt(rng, plaintext, &key.public_key_bytes()).unwrap();
 
-use rbottle::ecdh::ecdh_decrypt;
+use rust_bottle::ecdh::ecdh_decrypt;
 let decrypted = ecdh_decrypt(&ciphertext, &key.private_key_bytes()).unwrap();
 assert_eq!(decrypted, plaintext);
 ```
@@ -720,8 +720,8 @@ Decrypts ciphertext using a private key with automatic key type detection. Suppo
 
 **Example - Classical Keys:**
 ```rust
-use rbottle::ecdh::{ecdh_encrypt, ecdh_decrypt};
-use rbottle::keys::X25519Key;
+use rust_bottle::ecdh::{ecdh_encrypt, ecdh_decrypt};
+use rust_bottle::keys::X25519Key;
 use rand::rngs::OsRng;
 
 let plaintext = b"Message to encrypt";
@@ -739,8 +739,8 @@ assert_eq!(decrypted, plaintext);
 **Example - Post-Quantum Keys:**
 ```rust
 #[cfg(feature = "ml-kem")]
-use rbottle::ecdh::{ecdh_encrypt, ecdh_decrypt};
-use rbottle::keys::MlKem768Key;
+use rust_bottle::ecdh::{ecdh_encrypt, ecdh_decrypt};
+use rust_bottle::keys::MlKem768Key;
 use rand::rngs::OsRng;
 
 let plaintext = b"Post-quantum encrypted";
@@ -759,8 +759,8 @@ Encrypts using P-256 ECDH (lower-level function).
 
 **Example:**
 ```rust
-use rbottle::ecdh::ecdh_encrypt_p256;
-use rbottle::keys::EcdsaP256Key;
+use rust_bottle::ecdh::ecdh_encrypt_p256;
+use rust_bottle::keys::EcdsaP256Key;
 use rand::rngs::OsRng;
 use p256::PublicKey;
 
@@ -778,8 +778,8 @@ Decrypts using P-256 ECDH (lower-level function).
 
 **Example:**
 ```rust
-use rbottle::ecdh::{ecdh_encrypt_p256, ecdh_decrypt_p256};
-use rbottle::keys::EcdsaP256Key;
+use rust_bottle::ecdh::{ecdh_encrypt_p256, ecdh_decrypt_p256};
+use rust_bottle::keys::EcdsaP256Key;
 use rand::rngs::OsRng;
 use p256::{PublicKey, SecretKey};
 
@@ -800,8 +800,8 @@ Encrypts using X25519 ECDH (lower-level function).
 
 **Example:**
 ```rust
-use rbottle::ecdh::ecdh_encrypt_x25519;
-use rbottle::keys::X25519Key;
+use rust_bottle::ecdh::ecdh_encrypt_x25519;
+use rust_bottle::keys::X25519Key;
 use rand::rngs::OsRng;
 use x25519_dalek::PublicKey;
 
@@ -820,8 +820,8 @@ Decrypts using X25519 ECDH (lower-level function).
 
 **Example:**
 ```rust
-use rbottle::ecdh::{ecdh_encrypt_x25519, ecdh_decrypt_x25519};
-use rbottle::keys::X25519Key;
+use rust_bottle::ecdh::{ecdh_encrypt_x25519, ecdh_decrypt_x25519};
+use rust_bottle::keys::X25519Key;
 use rand::rngs::OsRng;
 use x25519_dalek::PublicKey;
 
@@ -846,8 +846,8 @@ Encrypts plaintext using ML-KEM-768 key encapsulation. Requires `ml-kem` feature
 **Example:**
 ```rust
 #[cfg(feature = "ml-kem")]
-use rbottle::ecdh::mlkem768_encrypt;
-use rbottle::keys::MlKem768Key;
+use rust_bottle::ecdh::mlkem768_encrypt;
+use rust_bottle::keys::MlKem768Key;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -864,8 +864,8 @@ Decrypts ciphertext encrypted with ML-KEM-768. Requires `ml-kem` feature.
 **Example:**
 ```rust
 #[cfg(feature = "ml-kem")]
-use rbottle::ecdh::{mlkem768_encrypt, mlkem768_decrypt};
-use rbottle::keys::MlKem768Key;
+use rust_bottle::ecdh::{mlkem768_encrypt, mlkem768_decrypt};
+use rust_bottle::keys::MlKem768Key;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -884,8 +884,8 @@ Encrypts plaintext using ML-KEM-1024 key encapsulation. Requires `ml-kem` featur
 **Example:**
 ```rust
 #[cfg(feature = "ml-kem")]
-use rbottle::ecdh::mlkem1024_encrypt;
-use rbottle::keys::MlKem1024Key;
+use rust_bottle::ecdh::mlkem1024_encrypt;
+use rust_bottle::keys::MlKem1024Key;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -902,8 +902,8 @@ Decrypts ciphertext encrypted with ML-KEM-1024. Requires `ml-kem` feature.
 **Example:**
 ```rust
 #[cfg(feature = "ml-kem")]
-use rbottle::ecdh::{mlkem1024_encrypt, mlkem1024_decrypt};
-use rbottle::keys::MlKem1024Key;
+use rust_bottle::ecdh::{mlkem1024_encrypt, mlkem1024_decrypt};
+use rust_bottle::keys::MlKem1024Key;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -922,8 +922,8 @@ Hybrid encryption combining ML-KEM-768 and X25519 for both post-quantum and clas
 **Example:**
 ```rust
 #[cfg(feature = "ml-kem")]
-use rbottle::ecdh::hybrid_encrypt_mlkem768_x25519;
-use rbottle::keys::{MlKem768Key, X25519Key};
+use rust_bottle::ecdh::hybrid_encrypt_mlkem768_x25519;
+use rust_bottle::keys::{MlKem768Key, X25519Key};
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -946,8 +946,8 @@ Decrypts hybrid-encrypted ciphertext. Tries ML-KEM first, falls back to X25519. 
 **Example:**
 ```rust
 #[cfg(feature = "ml-kem")]
-use rbottle::ecdh::{hybrid_encrypt_mlkem768_x25519, hybrid_decrypt_mlkem768_x25519};
-use rbottle::keys::{MlKem768Key, X25519Key};
+use rust_bottle::ecdh::{hybrid_encrypt_mlkem768_x25519, hybrid_decrypt_mlkem768_x25519};
+use rust_bottle::keys::{MlKem768Key, X25519Key};
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -980,7 +980,7 @@ Creates a new IDCard for a public key.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -994,7 +994,7 @@ Sets a metadata key-value pair.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -1013,7 +1013,7 @@ Gets a metadata value by key.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -1031,7 +1031,7 @@ Sets the purposes for a key (e.g., "sign", "decrypt").
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -1056,7 +1056,7 @@ Sets the expiration duration for a key.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 use std::time::Duration;
 
@@ -1078,7 +1078,7 @@ Tests if a key has a specific purpose and is not expired.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -1104,7 +1104,7 @@ Gets all key fingerprints that have a specific purpose and are not expired.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -1132,7 +1132,7 @@ Updates the list of group memberships.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -1158,7 +1158,7 @@ Signs the IDCard and returns the serialized signed IDCard.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -1181,7 +1181,7 @@ Serializes the IDCard to bytes.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -1197,7 +1197,7 @@ Deserializes an IDCard from bytes.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -1214,7 +1214,7 @@ Alias for `from_bytes` (for compatibility with gobottle).
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -1237,7 +1237,7 @@ Creates a new empty keychain.
 
 **Example:**
 ```rust
-use rbottle::Keychain;
+use rust_bottle::Keychain;
 
 let keychain = Keychain::new();
 ```
@@ -1248,7 +1248,7 @@ Adds a key to the keychain.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut keychain = Keychain::new();
@@ -1269,7 +1269,7 @@ Adds multiple keys of the same type to the keychain.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut keychain = Keychain::new();
@@ -1288,7 +1288,7 @@ Gets a key by its public key.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut keychain = Keychain::new();
@@ -1307,7 +1307,7 @@ Gets a signer by its public key (alias for `get_key`).
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut keychain = Keychain::new();
@@ -1325,7 +1325,7 @@ Signs a message with a specific key from the keychain.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut keychain = Keychain::new();
@@ -1345,7 +1345,7 @@ Iterates over all signers in the keychain.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut keychain = Keychain::new();
@@ -1379,7 +1379,7 @@ Creates a new membership linking a member to a group.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -1396,7 +1396,7 @@ Sets information about the membership (e.g., role, department).
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -1417,7 +1417,7 @@ Gets information value by key.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -1438,7 +1438,7 @@ Signs the membership and returns the serialized signed membership.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -1459,7 +1459,7 @@ Verifies the membership signature (simplified implementation).
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -1481,7 +1481,7 @@ Serializes the membership to bytes.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -1499,7 +1499,7 @@ Deserializes a membership from bytes.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -1524,7 +1524,7 @@ Signs a message (trait method).
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -1540,7 +1540,7 @@ Verifies a signature (trait method).
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -1560,14 +1560,14 @@ Generic sign function.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
 let key = Ed25519Key::generate(rng);
 let message = b"Message";
 
-let signature = rbottle::sign(rng, &key, message).unwrap();
+let signature = rust_bottle::sign(rng, &key, message).unwrap();
 ```
 
 ### `verify<V: Verify>(verifier: &V, message: &[u8], signature: &[u8]) -> Result<()>`
@@ -1576,7 +1576,7 @@ Generic verify function.
 
 **Example:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -1584,7 +1584,7 @@ let key = Ed25519Key::generate(rng);
 let message = b"Message";
 let signature = key.sign(rng, message).unwrap();
 
-assert!(rbottle::verify(&key, message, &signature).is_ok());
+assert!(rust_bottle::verify(&key, message, &signature).is_ok());
 ```
 
 ---
@@ -1599,7 +1599,7 @@ Hashes data using SHA-256.
 
 **Example:**
 ```rust
-use rbottle::hash::sha256;
+use rust_bottle::hash::sha256;
 
 let data = b"Hello, world!";
 let hash = sha256(data);
@@ -1616,7 +1616,7 @@ Hashes data using SHA-384.
 
 **Example:**
 ```rust
-use rbottle::hash::sha384;
+use rust_bottle::hash::sha384;
 
 let data = b"Hello, world!";
 let hash = sha384(data);
@@ -1629,7 +1629,7 @@ Hashes data using SHA-512.
 
 **Example:**
 ```rust
-use rbottle::hash::sha512;
+use rust_bottle::hash::sha512;
 
 let data = b"Hello, world!";
 let hash = sha512(data);
@@ -1642,7 +1642,7 @@ Hashes data using SHA3-256.
 
 **Example:**
 ```rust
-use rbottle::hash::sha3_256;
+use rust_bottle::hash::sha3_256;
 
 let data = b"Hello, world!";
 let hash = sha3_256(data);
@@ -1655,7 +1655,7 @@ Hashes data using SHA3-384.
 
 **Example:**
 ```rust
-use rbottle::hash::sha3_384;
+use rust_bottle::hash::sha3_384;
 
 let data = b"Hello, world!";
 let hash = sha3_384(data);
@@ -1668,7 +1668,7 @@ Hashes data using SHA3-512.
 
 **Example:**
 ```rust
-use rbottle::hash::sha3_512;
+use rust_bottle::hash::sha3_512;
 
 let data = b"Hello, world!";
 let hash = sha3_512(data);
@@ -1681,7 +1681,7 @@ Generic hash function that works with any Digest type.
 
 **Example:**
 ```rust
-use rbottle::hash::hash;
+use rust_bottle::hash::hash;
 use sha2::Sha256;
 
 let data = b"Hello, world!";
@@ -1695,7 +1695,7 @@ Applies hashing multiple times.
 
 **Example:**
 ```rust
-use rbottle::hash::multi_hash;
+use rust_bottle::hash::multi_hash;
 use sha2::Sha256;
 
 let data = b"Hello, world!";
@@ -1712,7 +1712,7 @@ Securely clears sensitive data from memory.
 
 **Example:**
 ```rust
-use rbottle::utils::mem_clr;
+use rust_bottle::utils::mem_clr;
 
 let mut sensitive = vec![1, 2, 3, 4, 5];
 mem_clr(&mut sensitive);
@@ -1741,7 +1741,7 @@ All operations return `Result<T, BottleError>`. The `BottleError` enum covers al
 
 **Example - Error Handling:**
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut bottle = Bottle::new(b"Message".to_vec());
@@ -1767,7 +1767,7 @@ match opener.open(&bottle, None) {
 Here's a complete example showing Alice and Bob communicating securely:
 
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 fn main() -> Result<()> {
@@ -1827,5 +1827,5 @@ fn main() -> Result<()> {
 }
 ```
 
-This comprehensive API reference covers all public functions and methods in the rbottle library with detailed, working examples.
+This comprehensive API reference covers all public functions and methods in the rust-bottle library with detailed, working examples.
 

@@ -1,10 +1,10 @@
-# rbottle
+# rust-bottle
 
 Rust implementation of the Bottle protocol - a layered message container system with encryption and signatures. This library provides secure, type-safe cryptographic operations for building privacy-preserving applications.
 
 ## Overview
 
-rbottle implements the Bottle protocol, which provides layered message containers with support for multiple encryption layers, multiple signatures, key management through IDCards and Keychains, and cryptographically signed group memberships. The library is designed to match the functionality of the Go implementation [gobottle](https://github.com/BottleFmt/gobottle) while leveraging Rust's type safety and memory safety guarantees.
+rust-bottle implements the Bottle protocol, which provides layered message containers with support for multiple encryption layers, multiple signatures, key management through IDCards and Keychains, and cryptographically signed group memberships. The library is designed to match the functionality of the Go implementation [gobottle](https://github.com/BottleFmt/gobottle) while leveraging Rust's type safety and memory safety guarantees.
 
 ## Features
 
@@ -39,11 +39,11 @@ rbottle implements the Bottle protocol, which provides layered message container
 
 ## Installation
 
-Add rbottle to your `Cargo.toml`:
+Add rust-bottle to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-rbottle = "0.1.0"
+rust-bottle = "0.1.0"
 rand = "0.8"
 ```
 
@@ -52,7 +52,7 @@ rand = "0.8"
 ### Basic Encryption and Decryption
 
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 // Create a message container
@@ -75,7 +75,7 @@ assert_eq!(decrypted, message);
 ### Signing and Verification
 
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let message = b"Signed message";
@@ -102,7 +102,7 @@ assert!(info.is_signed_by(&public_key));
 Bottles are layered message containers that support multiple encryption and signature layers. Each encryption layer can be for a different recipient, and multiple signers can sign the same bottle.
 
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 // Create a bottle with a message
@@ -145,7 +145,7 @@ assert_eq!(decrypted, message);
 IDCards allow entities to declare multiple keys with specific purposes and manage key lifecycles. They can be signed to establish trust.
 
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 use std::time::{Duration, SystemTime};
 
@@ -190,7 +190,7 @@ assert_eq!(decrypt_keys.len(), 2);
 Keychains provide secure storage for private keys, indexed by their public key fingerprints. They enable signing with specific keys without exposing the key selection logic.
 
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -225,7 +225,7 @@ bottle.sign(rng, signer, &ed25519_pub).unwrap();
 Memberships provide cryptographically signed group affiliations, allowing entities to prove membership in groups with specific roles.
 
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let rng = &mut OsRng;
@@ -261,7 +261,7 @@ member_idcard.update_groups(vec![membership.to_bytes().unwrap()]);
 Direct ECDH encryption can be used independently of bottles for encrypting data to public keys.
 
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let plaintext = b"Secret message";
@@ -297,7 +297,7 @@ ML-KEM (Module-Lattice-Based Key-Encapsulation Mechanism) provides post-quantum 
 
 ```rust
 #[cfg(feature = "ml-kem")]
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let plaintext = b"Post-quantum encrypted message";
@@ -329,7 +329,7 @@ ML-DSA (Module-Lattice-Based Digital Signature Algorithm) provides post-quantum 
 
 ```rust
 #[cfg(feature = "post-quantum")]
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let message = b"Post-quantum signed message";
@@ -352,7 +352,7 @@ SLH-DSA (Stateless Hash-Based Digital Signature Algorithm) provides hash-based p
 
 ```rust
 #[cfg(feature = "post-quantum")]
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let message = b"Hash-based signed message";
@@ -375,7 +375,7 @@ Hybrid encryption provides both post-quantum and classical security. Requires th
 
 ```rust
 #[cfg(feature = "ml-kem")]
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let plaintext = b"Hybrid encrypted message";
@@ -411,7 +411,7 @@ Post-quantum keys work seamlessly with the Bottle API:
 
 ```rust
 #[cfg(feature = "post-quantum")]
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let mut bottle = Bottle::new(b"Post-quantum secure message".to_vec());
@@ -445,7 +445,7 @@ assert!(info.is_signed_by(&pub_key));
 The library also supports P-256 ECDH for compatibility with ECDSA keys.
 
 ```rust
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 let plaintext = b"P-256 encrypted message";
@@ -680,7 +680,7 @@ Performance characteristics:
 
 ## Compatibility with gobottle
 
-rbottle aims to match gobottle's functionality while adapting to Rust's type system:
+rust-bottle aims to match gobottle's functionality while adapting to Rust's type system:
 
 - Same core concepts: Bottles, IDCards, Keychains, Memberships
 - Similar API structure adapted for Rust idioms

@@ -3,13 +3,13 @@ use rand::rngs::OsRng;
 
 // Import all types needed for tests
 #[cfg(feature = "ml-kem")]
-use rbottle::{MlKem768Key, MlKem1024Key, mlkem768_encrypt, mlkem768_decrypt, mlkem1024_encrypt, mlkem1024_decrypt, hybrid_encrypt_mlkem768_x25519, hybrid_decrypt_mlkem768_x25519};
+use rust_bottle::{MlKem768Key, MlKem1024Key, mlkem768_encrypt, mlkem768_decrypt, mlkem1024_encrypt, mlkem1024_decrypt, hybrid_encrypt_mlkem768_x25519, hybrid_decrypt_mlkem768_x25519};
 
 #[cfg(feature = "post-quantum")]
-use rbottle::{MlDsa44Key, MlDsa65Key, MlDsa87Key, SlhDsa128sKey, SlhDsa192sKey, SlhDsa256sKey};
+use rust_bottle::{MlDsa44Key, MlDsa65Key, MlDsa87Key, SlhDsa128sKey, SlhDsa192sKey, SlhDsa256sKey};
 
 // Import common types
-use rbottle::{Bottle, Opener, Keychain, IDCard, X25519Key, Ed25519Key, ecdh_encrypt, ecdh_decrypt, Sign, Verify};
+use rust_bottle::{Bottle, Opener, Keychain, IDCard, X25519Key, Ed25519Key, ecdh_encrypt, ecdh_decrypt, Sign, Verify};
 
 // ============================================================================
 // ML-KEM Encryption Tests

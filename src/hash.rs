@@ -21,7 +21,7 @@ use sha3::{Sha3_256, Sha3_384, Sha3_512};
 /// # Example
 ///
 /// ```rust
-/// use rbottle::hash::hash;
+/// use rust_bottle::hash::hash;
 /// use sha2::Sha256;
 ///
 /// let data = b"Hello, world!";
@@ -54,7 +54,7 @@ pub fn hash<D: Digest>(data: &[u8]) -> Vec<u8> {
 /// # Example
 ///
 /// ```rust
-/// use rbottle::hash::multi_hash;
+/// use rust_bottle::hash::multi_hash;
 /// use sha2::Sha256;
 ///
 /// let data = b"Hello, world!";
@@ -71,7 +71,7 @@ pub fn multi_hash<D: Digest>(data: &[u8], levels: usize) -> Vec<u8> {
 /// Hash data using SHA-256.
 ///
 /// SHA-256 is a widely-used cryptographic hash function producing 256-bit
-/// (32-byte) outputs. It's used throughout rbottle for key fingerprinting.
+/// (32-byte) outputs. It's used throughout rust-bottle for key fingerprinting.
 ///
 /// # Arguments
 ///
@@ -84,7 +84,7 @@ pub fn multi_hash<D: Digest>(data: &[u8], levels: usize) -> Vec<u8> {
 /// # Example
 ///
 /// ```rust
-/// use rbottle::hash::sha256;
+/// use rust_bottle::hash::sha256;
 ///
 /// let data = b"Hello, world!";
 /// let hash = sha256(data);

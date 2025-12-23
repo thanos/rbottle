@@ -8,14 +8,14 @@ pub type Result<T> = std::result::Result<T, BottleError>;
 
 /// Errors that can occur in Bottle operations.
 ///
-/// This enum covers all error conditions that can arise when using the rbottle
+/// This enum covers all error conditions that can arise when using the rust-bottle
 /// library, including cryptographic failures, key management issues, and
 /// serialization problems.
 ///
 /// # Example
 ///
 /// ```rust
-/// use rbottle::errors::{BottleError, Result};
+/// use rust_bottle::errors::{BottleError, Result};
 ///
 /// fn example() -> Result<()> {
 ///     // Operations that might fail

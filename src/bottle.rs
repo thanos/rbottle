@@ -14,7 +14,7 @@ use std::collections::HashMap;
 /// # Example
 ///
 /// ```rust
-/// use rbottle::*;
+/// use rust_bottle::*;
 /// use rand::rngs::OsRng;
 ///
 /// let message = b"Secret message";
@@ -87,7 +87,7 @@ struct SignatureLayer {
 /// # Example
 ///
 /// ```rust
-/// use rbottle::*;
+/// use rust_bottle::*;
 ///
 /// let bottle = Bottle::new(b"Message".to_vec());
 /// let opener = Opener::new();
@@ -121,7 +121,7 @@ impl Bottle {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::Bottle;
+    /// use rust_bottle::Bottle;
     ///
     /// let bottle = Bottle::new(b"Hello, world!".to_vec());
     /// assert!(!bottle.is_encrypted());
@@ -198,7 +198,7 @@ impl Bottle {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::*;
+    /// use rust_bottle::*;
     /// use rand::rngs::OsRng;
     ///
     /// let mut bottle = Bottle::new(b"Secret".to_vec());
@@ -257,7 +257,7 @@ impl Bottle {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::*;
+    /// use rust_bottle::*;
     /// use rand::rngs::OsRng;
     ///
     /// let mut bottle = Bottle::new(b"Message".to_vec());
@@ -302,7 +302,7 @@ impl Bottle {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::Bottle;
+    /// use rust_bottle::Bottle;
     ///
     /// let mut bottle = Bottle::new(b"Message".to_vec());
     /// bottle.set_metadata("sender", "alice@example.com");
@@ -326,7 +326,7 @@ impl Bottle {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::Bottle;
+    /// use rust_bottle::Bottle;
     ///
     /// let mut bottle = Bottle::new(b"Message".to_vec());
     /// bottle.set_metadata("sender", "alice");
@@ -365,7 +365,7 @@ impl Bottle {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::Bottle;
+    /// use rust_bottle::Bottle;
     ///
     /// let bottle = Bottle::new(b"Message".to_vec());
     /// let bytes = bottle.to_bytes().unwrap();
@@ -391,7 +391,7 @@ impl Bottle {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::Bottle;
+    /// use rust_bottle::Bottle;
     ///
     /// let bottle = Bottle::new(b"Message".to_vec());
     /// let bytes = bottle.to_bytes().unwrap();
@@ -414,7 +414,7 @@ impl Bottle {
 /// # Example
 ///
 /// ```rust
-/// use rbottle::*;
+/// use rust_bottle::*;
 /// use rand::rngs::OsRng;
 ///
 /// let mut bottle = Bottle::new(b"Secret".to_vec());
@@ -467,7 +467,7 @@ impl Opener {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::*;
+    /// use rust_bottle::*;
     /// use rand::rngs::OsRng;
     ///
     /// let message = b"Hello, world!";
@@ -519,7 +519,7 @@ impl Opener {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::*;
+    /// use rust_bottle::*;
     /// use rand::rngs::OsRng;
     ///
     /// let mut bottle = Bottle::new(b"Message".to_vec());
@@ -567,7 +567,7 @@ impl BottleInfo {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::*;
+    /// use rust_bottle::*;
     /// use rand::rngs::OsRng;
     ///
     /// let mut bottle = Bottle::new(b"Message".to_vec());

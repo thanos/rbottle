@@ -14,7 +14,7 @@ use std::collections::HashMap;
 /// # Example
 ///
 /// ```rust
-/// use rbottle::*;
+/// use rust_bottle::*;
 /// use rand::rngs::OsRng;
 ///
 /// let rng = &mut OsRng;
@@ -54,7 +54,7 @@ impl Membership {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::*;
+    /// use rust_bottle::*;
     /// use rand::rngs::OsRng;
     ///
     /// let rng = &mut OsRng;
@@ -88,7 +88,7 @@ impl Membership {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::*;
+    /// use rust_bottle::*;
     /// use rand::rngs::OsRng;
     ///
     /// let rng = &mut OsRng;
@@ -138,7 +138,7 @@ impl Membership {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::*;
+    /// use rust_bottle::*;
     /// use rand::rngs::OsRng;
     ///
     /// let rng = &mut OsRng;

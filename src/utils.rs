@@ -14,7 +14,7 @@ use zeroize::Zeroize;
 /// # Example
 ///
 /// ```rust
-/// use rbottle::utils::mem_clr;
+/// use rust_bottle::utils::mem_clr;
 ///
 /// let mut sensitive = vec![1, 2, 3, 4, 5];
 /// mem_clr(&mut sensitive);

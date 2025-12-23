@@ -15,7 +15,7 @@ use std::time::{Duration, SystemTime};
 /// # Example
 ///
 /// ```rust
-/// use rbottle::*;
+/// use rust_bottle::*;
 /// use rand::rngs::OsRng;
 /// use std::time::Duration;
 ///
@@ -70,7 +70,7 @@ impl IDCard {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::*;
+    /// use rust_bottle::*;
     /// use rand::rngs::OsRng;
     ///
     /// let rng = &mut OsRng;
@@ -110,7 +110,7 @@ impl IDCard {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::*;
+    /// use rust_bottle::*;
     /// use rand::rngs::OsRng;
     ///
     /// let rng = &mut OsRng;
@@ -151,7 +151,7 @@ impl IDCard {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::*;
+    /// use rust_bottle::*;
     /// use rand::rngs::OsRng;
     ///
     /// let rng = &mut OsRng;
@@ -181,7 +181,7 @@ impl IDCard {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::*;
+    /// use rust_bottle::*;
     /// use rand::rngs::OsRng;
     /// use std::time::Duration;
     ///
@@ -218,7 +218,7 @@ impl IDCard {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::*;
+    /// use rust_bottle::*;
     /// use rand::rngs::OsRng;
     ///
     /// let rng = &mut OsRng;
@@ -264,7 +264,7 @@ impl IDCard {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::*;
+    /// use rust_bottle::*;
     /// use rand::rngs::OsRng;
     ///
     /// let rng = &mut OsRng;
@@ -321,7 +321,7 @@ impl IDCard {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::*;
+    /// use rust_bottle::*;
     /// use rand::rngs::OsRng;
     ///
     /// let rng = &mut OsRng;
@@ -367,7 +367,7 @@ impl IDCard {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::*;
+    /// use rust_bottle::*;
     /// use rand::rngs::OsRng;
     ///
     /// let rng = &mut OsRng;
@@ -397,7 +397,7 @@ impl IDCard {
     /// # Example
     ///
     /// ```rust
-    /// use rbottle::*;
+    /// use rust_bottle::*;
     /// use rand::rngs::OsRng;
     ///
     /// let rng = &mut OsRng;

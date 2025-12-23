@@ -1,4 +1,4 @@
-use rbottle::*;
+use rust_bottle::*;
 use rand::rngs::OsRng;
 
 #[test]
