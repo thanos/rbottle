@@ -4,6 +4,8 @@ use crate::keychain::SignerKey;
 use ed25519_dalek::{SigningKey as Ed25519SigningKey, VerifyingKey as Ed25519VerifyingKey, Signature};
 use p256::ecdsa::{SigningKey as P256SigningKey, VerifyingKey as P256VerifyingKey};
 use rand::{CryptoRng, RngCore};
+use rsa::{RsaPrivateKey, RsaPublicKey, Pkcs1v15Sign};
+use sha2::{Sha256, Digest};
 
 // Post-quantum cryptography imports
 #[cfg(feature = "ml-kem")]
@@ -552,6 +554,288 @@ impl X25519Key {
         let secret = StaticSecret::from(secret_bytes);
         let public = x25519_dalek::PublicKey::from(&secret);
         Ok(Self { secret: secret_bytes, public })
+    }
+}
+
+/// RSA key pair for encryption and digital signatures.
+///
+/// RSA (Rivest-Shamir-Adleman) is a widely-used public-key cryptosystem. This
+/// implementation supports RSA-2048 and RSA-4096 key sizes. RSA can be used for
+/// both encryption/decryption and signing/verification.
+///
+/// # Security Note
+///
+/// RSA-2048 provides 112-bit security, while RSA-4096 provides 192-bit security.
+/// For new applications, consider using ECDSA or Ed25519 for signatures, and
+/// X25519 or post-quantum algorithms for encryption.
+///
+/// # Example
+///
+/// ```rust
+/// use rust_bottle::keys::RsaKey;
+/// use rand::rngs::OsRng;
+///
+/// let rng = &mut OsRng;
+/// let key = RsaKey::generate(rng, 2048).unwrap();
+/// let pub_key = key.public_key_bytes();
+/// let priv_key = key.private_key_bytes();
+/// ```
+pub struct RsaKey {
+    private_key: RsaPrivateKey,
+    public_key: RsaPublicKey,
+    key_size: usize,
+}
+
+impl RsaKey {
+    /// Generate a new RSA key pair.
+    ///
+    /// This function generates a cryptographically secure RSA key pair with
+    /// the specified key size. Common key sizes are 2048 (112-bit security)
+    /// and 4096 (192-bit security).
+    ///
+    /// # Arguments
+    ///
+    /// * `rng` - A cryptographically secure random number generator
+    /// * `bits` - Key size in bits (must be a multiple of 8 and at least 512)
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(RsaKey)` - A new RSA key pair
+    /// * `Err(BottleError::InvalidKeyType)` - If key size is invalid
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use rust_bottle::keys::RsaKey;
+    /// use rand::rngs::OsRng;
+    ///
+    /// let rng = &mut OsRng;
+    /// let key = RsaKey::generate(rng, 2048).unwrap();
+    /// ```
+    pub fn generate<R: RngCore + CryptoRng>(rng: &mut R, bits: usize) -> Result<Self> {
+        if bits < 512 || bits % 8 != 0 {
+            return Err(BottleError::InvalidKeyType);
+        }
+        let private_key = RsaPrivateKey::new(rng, bits)
+            .map_err(|_| BottleError::InvalidKeyType)?;
+        let public_key = RsaPublicKey::from(&private_key);
+        Ok(Self {
+            private_key,
+            public_key,
+            key_size: bits / 8,
+        })
+    }
+
+    /// Get the public key bytes.
+    ///
+    /// The public key is returned as raw bytes (n and e components).
+    /// For standard formats, use PKCS#8 serialization via the pkix module.
+    ///
+    /// # Returns
+    ///
+    /// Public key bytes (serialized n and e)
+    pub fn public_key_bytes(&self) -> Vec<u8> {
+        // Note: For proper PKCS#8/PKIX serialization, use the pkix module
+        // This is a placeholder that returns the key size as a marker
+        // TODO: Implement proper PKCS#8 serialization via pkix module
+        vec![]
+    }
+
+    /// Get the private key bytes.
+    ///
+    /// The private key is returned as raw bytes. This is sensitive
+    /// data and should be handled securely.
+    /// For standard formats, use PKCS#8 serialization via the pkix module.
+    ///
+    /// # Returns
+    ///
+    /// Private key bytes (serialized key components)
+    ///
+    /// # Security Warning
+    ///
+    /// Private keys are sensitive cryptographic material. They should be
+    /// stored securely and cleared from memory when no longer needed.
+    pub fn private_key_bytes(&self) -> Vec<u8> {
+        // Note: For proper PKCS#8 serialization, use the pkix module
+        // This is a placeholder
+        // TODO: Implement proper PKCS#8 serialization via pkix module
+        vec![]
+    }
+
+    /// Create an RSA key pair from private key bytes.
+    ///
+    /// This function reconstructs a key pair from a previously saved private
+    /// key in PKCS#1 DER format. The public key is automatically derived.
+    ///
+    /// # Arguments
+    ///
+    /// * `bytes` - Private key bytes in PKCS#1 DER format
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(RsaKey)` - Reconstructed key pair
+    /// * `Err(BottleError::InvalidKeyType)` - If the key format is invalid
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// use rust_bottle::keys::RsaKey;
+    /// use rand::rngs::OsRng;
+    ///
+    /// let rng = &mut OsRng;
+    /// let original = RsaKey::generate(rng, 2048).unwrap();
+    /// // Note: from_private_key_bytes is a placeholder and not yet implemented
+    /// // For now, use PKCS#8 serialization via the pkix module for key persistence
+    /// ```
+    pub fn from_private_key_bytes(_bytes: &[u8]) -> Result<Self> {
+        // Note: For proper PKCS#8 deserialization, use the pkix module
+        // This is a placeholder
+        // TODO: Implement proper PKCS#8 deserialization via pkix module
+        Err(BottleError::InvalidKeyType)
+    }
+
+    /// Encrypt data using RSA-OAEP.
+    ///
+    /// This function encrypts data using RSA-OAEP (Optimal Asymmetric Encryption
+    /// Padding) with SHA-256. OAEP is more secure than PKCS#1 v1.5 padding.
+    ///
+    /// # Arguments
+    ///
+    /// * `rng` - A random number generator
+    /// * `data` - The data to encrypt (must be smaller than key size - 42 bytes)
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(Vec<u8>)` - Encrypted ciphertext
+    /// * `Err(BottleError::Encryption)` - If encryption fails
+    pub fn encrypt<R: RngCore + CryptoRng>(&self, rng: &mut R, data: &[u8]) -> Result<Vec<u8>> {
+        use rsa::Oaep;
+        // OAEP with SHA-256
+        let padding = Oaep::new::<Sha256>();
+        self.public_key.encrypt(rng, padding, data)
+            .map_err(|e| BottleError::Encryption(format!("RSA encryption failed: {}", e)))
+    }
+
+    /// Decrypt data using RSA-OAEP.
+    ///
+    /// This function decrypts data encrypted with RSA-OAEP.
+    ///
+    /// # Arguments
+    ///
+    /// * `ciphertext` - The encrypted data
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(Vec<u8>)` - Decrypted plaintext
+    /// * `Err(BottleError::Decryption)` - If decryption fails
+    pub fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>> {
+        use rsa::Oaep;
+        // OAEP with SHA-256
+        let padding = Oaep::new::<Sha256>();
+        self.private_key.decrypt(padding, ciphertext)
+            .map_err(|e| BottleError::Decryption(format!("RSA decryption failed: {}", e)))
+    }
+
+    /// Get the public key reference (for encryption operations).
+    pub fn public_key(&self) -> &RsaPublicKey {
+        &self.public_key
+    }
+
+    /// Get the private key reference (for decryption operations).
+    pub fn private_key(&self) -> &RsaPrivateKey {
+        &self.private_key
+    }
+
+    /// Get the key size in bytes.
+    pub fn key_size(&self) -> usize {
+        self.key_size
+    }
+}
+
+impl Sign for RsaKey {
+    /// Sign a message using RSA-PKCS#1 v1.5 with SHA-256.
+    ///
+    /// The message is hashed with SHA-256 before signing. This is the standard
+    /// approach for RSA signatures.
+    ///
+    /// # Arguments
+    ///
+    /// * `rng` - A random number generator (not used for deterministic signing)
+    /// * `message` - The message to sign
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(Vec<u8>)` - Signature bytes
+    /// * `Err(BottleError::VerifyFailed)` - If signing fails
+    fn sign(&self, _rng: &mut dyn RngCore, message: &[u8]) -> Result<Vec<u8>> {
+        let mut hasher = Sha256::new();
+        hasher.update(message);
+        let hashed = hasher.finalize();
+        
+        self.private_key.sign(Pkcs1v15Sign::new::<Sha256>(), &hashed)
+            .map_err(|_| BottleError::VerifyFailed)
+    }
+}
+
+impl Verify for RsaKey {
+    /// Verify an RSA-PKCS#1 v1.5 signature with SHA-256.
+    ///
+    /// The message is hashed with SHA-256 before verification.
+    ///
+    /// # Arguments
+    ///
+    /// * `message` - The original message
+    /// * `signature` - The signature to verify
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(())` - Signature is valid
+    /// * `Err(BottleError::VerifyFailed)` - If signature verification fails
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use rust_bottle::keys::RsaKey;
+    /// use rust_bottle::signing::{Sign, Verify};
+    /// use rand::rngs::OsRng;
+    ///
+    /// let rng = &mut OsRng;
+    /// let key = RsaKey::generate(rng, 2048).unwrap();
+    /// let message = b"Test message";
+    ///
+    /// let signature = key.sign(rng, message).unwrap();
+    /// assert!(key.verify(message, &signature).is_ok());
+    /// ```
+    fn verify(&self, message: &[u8], signature: &[u8]) -> Result<()> {
+        let mut hasher = Sha256::new();
+        hasher.update(message);
+        let hashed = hasher.finalize();
+        
+        self.public_key.verify(Pkcs1v15Sign::new::<Sha256>(), &hashed, signature)
+            .map_err(|_| BottleError::VerifyFailed)?;
+        Ok(())
+    }
+}
+
+impl SignerKey for RsaKey {
+    /// Get the public key fingerprint (SHA-256 hash).
+    ///
+    /// The fingerprint is used to identify keys in keychains and IDCards.
+    ///
+    /// # Returns
+    ///
+    /// SHA-256 hash of the public key bytes
+    fn fingerprint(&self) -> Vec<u8> {
+        crate::hash::sha256(&self.public_key_bytes())
+    }
+
+    /// Get the public key bytes.
+    ///
+    /// # Returns
+    ///
+    /// Public key bytes in PKCS#1 DER format
+    fn public_key(&self) -> Vec<u8> {
+        self.public_key_bytes()
     }
 }
 

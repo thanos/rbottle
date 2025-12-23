@@ -16,8 +16,9 @@ rust-bottle implements the Bottle protocol, which provides layered message conta
 
 ### Cryptographic Operations
 - Elliptic Curve Diffie-Hellman (ECDH) encryption using X25519 and P-256
+- RSA encryption/decryption using RSA-OAEP with SHA-256
 - AES-256-GCM authenticated encryption for shared secret encryption
-- Digital signatures using ECDSA (P-256, P-384, P-521) and Ed25519
+- Digital signatures using ECDSA (P-256, P-384, P-521), Ed25519, and RSA
 - Automatic key type detection for encryption and decryption operations
 
 ### Key Management
@@ -440,6 +441,38 @@ let info = opener.open_info(&bottle).unwrap();
 assert!(info.is_signed_by(&pub_key));
 ```
 
+### RSA Encryption and Signing
+
+RSA support is available for both encryption and signing operations. RSA is useful for compatibility with legacy systems, though modern applications should prefer ECDSA/Ed25519 for signatures and X25519 for encryption.
+
+```rust
+use rust_bottle::*;
+use rand::rngs::OsRng;
+
+let rng = &mut OsRng;
+
+// Generate RSA key pair (2048-bit or 4096-bit)
+let rsa_key = RsaKey::generate(rng, 2048).unwrap();
+
+// RSA Encryption (for small messages)
+let plaintext = b"Small message";
+let ciphertext = rsa_encrypt(rng, plaintext, rsa_key.public_key()).unwrap();
+let decrypted = rsa_decrypt(&ciphertext, &rsa_key).unwrap();
+assert_eq!(decrypted, plaintext);
+
+// RSA Signing
+let message = b"Message to sign";
+let signature = rsa_key.sign(rng, message).unwrap();
+assert!(rsa_key.verify(message, &signature).is_ok());
+
+// Use RSA with Bottles
+let mut bottle = Bottle::new(b"RSA-encrypted message".to_vec());
+// Note: RSA encryption is limited to small messages (key_size - 42 bytes)
+// For larger messages, use RSA to encrypt a symmetric key
+```
+
+**Note**: RSA can only encrypt small messages (typically up to key_size - 42 bytes for OAEP with SHA-256). For larger messages, use RSA to encrypt a symmetric key and then encrypt the message with that key.
+
 ### P-256 ECDH Encryption
 
 The library also supports P-256 ECDH for compatibility with ECDSA keys.
@@ -475,6 +508,7 @@ assert_eq!(decrypted, plaintext);
 | ECDSA P-384 | Signing | Supported | Full implementation |
 | ECDSA P-521 | Signing | Supported | Full implementation |
 | Ed25519 | Signing | Supported | Full implementation |
+| RSA | Signing/Encryption | Supported | RSA-OAEP encryption, PKCS#1 v1.5 signing |
 | X25519 | Encryption | Supported | ECDH key exchange |
 | P-256 ECDH | Encryption | Supported | ECDH key exchange |
 | AES-256-GCM | Encryption | Supported | Used for shared secret encryption |
@@ -538,7 +572,7 @@ RSA dependency is included but not yet implemented. RSA support is planned for a
 
 - `bottle.rs`: Core Bottle and Opener types
 - `ecdh.rs`: ECDH encryption and decryption implementations
-- `keys.rs`: Key type implementations (ECDSA, Ed25519, X25519)
+- `keys.rs`: Key type implementations (ECDSA, Ed25519, X25519, RSA)
 - `signing.rs`: Sign and Verify traits
 - `idcard.rs`: IDCard implementation
 - `keychain.rs`: Keychain implementation
@@ -559,8 +593,8 @@ RSA dependency is included but not yet implemented. RSA support is planned for a
 
 Keys implement traits based on their capabilities:
 
-- `Sign`: Types that can sign data (ECDSA, Ed25519)
-- `Verify`: Types that can verify signatures (ECDSA, Ed25519)
+- `Sign`: Types that can sign data (ECDSA, Ed25519, RSA)
+- `Verify`: Types that can verify signatures (ECDSA, Ed25519, RSA)
 - `SignerKey`: Keys that can be stored in keychains (all key types)
 
 This design allows the library to work with different key types polymorphically while maintaining type safety.

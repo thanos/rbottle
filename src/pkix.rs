@@ -35,7 +35,7 @@
 //! ```
 
 use crate::errors::{BottleError, Result};
-use const_oid::{ObjectIdentifier, db::rfc5912, db::rfc8410};
+use const_oid::{ObjectIdentifier, db::rfc5912};
 use der::{Decode, Encode};
 use pkcs8::{AlgorithmIdentifierRef, PrivateKeyInfo};
 use spki::{AlgorithmIdentifier, SubjectPublicKeyInfo};
@@ -53,6 +53,8 @@ pub enum KeyType {
     Ed25519,
     /// X25519
     X25519,
+    /// RSA (PKCS#1)
+    Rsa,
     /// ML-KEM-768 (requires `ml-kem` feature)
     #[cfg(feature = "ml-kem")]
     MlKem768,
@@ -88,6 +90,7 @@ impl KeyType {
             KeyType::EcdsaP521 => rfc5912::ID_EC_PUBLIC_KEY, // ecPublicKey
             KeyType::Ed25519 => ObjectIdentifier::new("1.3.101.112").expect("Invalid Ed25519 OID"),         // Ed25519
             KeyType::X25519 => ObjectIdentifier::new("1.3.101.110").expect("Invalid X25519 OID"),          // X25519
+            KeyType::Rsa => rfc5912::RSA_ENCRYPTION,     // rsaEncryption
             #[cfg(feature = "ml-kem")]
             KeyType::MlKem768 | KeyType::MlKem1024 => {
                 // ML-KEM OID (NIST standard) - placeholder, actual OID may differ
@@ -175,6 +178,7 @@ pub fn marshal_pkix_public_key_with_type(
         }
         KeyType::Ed25519 => marshal_ed25519_pkix(public_key_bytes),
         KeyType::X25519 => marshal_x25519_pkix(public_key_bytes),
+        KeyType::Rsa => marshal_rsa_pkix(public_key_bytes),
         #[cfg(feature = "ml-kem")]
         KeyType::MlKem768 | KeyType::MlKem1024 => {
             marshal_mlkem_pkix(public_key_bytes, key_type)
@@ -310,6 +314,7 @@ pub fn marshal_pkcs8_private_key(
         }
         KeyType::Ed25519 => marshal_ed25519_pkcs8(private_key_bytes),
         KeyType::X25519 => marshal_x25519_pkcs8(private_key_bytes),
+        KeyType::Rsa => marshal_rsa_pkcs8(private_key_bytes),
         #[cfg(feature = "ml-kem")]
         KeyType::MlKem768 | KeyType::MlKem1024 => {
             marshal_mlkem_pkcs8(private_key_bytes, key_type)
@@ -412,6 +417,14 @@ pub fn parse_pkcs8_private_key(der_bytes: &[u8], key_type: KeyType) -> Result<Ve
                 BottleError::Deserialization(format!("Failed to parse PKCS#8 private key: {}", e))
             })?;
             Ok(pkcs8.private_key.to_vec())
+        }
+        KeyType::Rsa => {
+            // RSA private keys in PKCS#8 contain RSAPrivateKey structure
+            // For now, return error - proper implementation requires RsaPrivateKey parsing
+            // TODO: Implement proper RSA PKCS#8 deserialization
+            Err(BottleError::Deserialization(
+                "RSA PKCS#8 deserialization not yet implemented. Use RsaKey directly.".to_string()
+            ))
         }
         _ => {
             // For other key types, return the raw private key bytes
@@ -564,6 +577,26 @@ fn marshal_x25519_pkcs8(private_key_bytes: &[u8]) -> Result<Vec<u8>> {
     pkcs8.to_der().map_err(|e| {
         BottleError::Serialization(format!("Failed to encode X25519 PKCS#8: {}", e))
     })
+}
+
+fn marshal_rsa_pkix(_public_key_bytes: &[u8]) -> Result<Vec<u8>> {
+    // Note: RSA public key bytes from RsaKey::public_key_bytes() are currently empty
+    // This is a placeholder - proper implementation requires RsaPublicKey reference
+    // For now, return an error indicating PKCS#8 serialization should be used
+    // TODO: Implement proper RSA PKIX serialization using RsaPublicKey
+    Err(BottleError::Serialization(
+        "RSA PKIX serialization requires RsaPublicKey reference. Use PKCS#8 serialization or provide RsaPublicKey directly.".to_string()
+    ))
+}
+
+fn marshal_rsa_pkcs8(_private_key_bytes: &[u8]) -> Result<Vec<u8>> {
+    // Note: RSA private key bytes from RsaKey::private_key_bytes() are currently empty
+    // This is a placeholder - proper implementation requires RsaPrivateKey reference
+    // For now, return an error indicating direct RsaKey should be used
+    // TODO: Implement proper RSA PKCS#8 serialization using RsaPrivateKey
+    Err(BottleError::Serialization(
+        "RSA PKCS#8 serialization requires RsaPrivateKey reference. Use RsaKey directly or provide RsaPrivateKey.".to_string()
+    ))
 }
 
 #[cfg(feature = "ml-kem")]

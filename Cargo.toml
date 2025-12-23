@@ -15,7 +15,7 @@ ecdsa = "0.16"
 p256 = { version = "0.13", features = ["ecdh", "arithmetic", "pkcs8"] }
 p384 = { version = "0.13", features = ["ecdh", "arithmetic"] }
 p521 = { version = "0.13", features = ["ecdh", "arithmetic"] }
-rsa = "0.9"
+rsa = { version = "0.9", features = ["sha2"] }
 x25519-dalek = "1.0"
 sha2 = "0.10"
 sha3 = "0.10"
@@ -73,3 +73,7 @@ path = "tests/pqc_test.rs"
 [[test]]
 name = "pkix"
 path = "tests/pkix_test.rs"
+
+[[test]]
+name = "rsa"
+path = "tests/rsa_test.rs"

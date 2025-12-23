@@ -814,3 +814,85 @@ fn decrypt_aes_gcm(key: &[u8; 32], ciphertext: &[u8]) -> Result<Vec<u8>> {
     Ok(result)
 }
 
+/// RSA-OAEP encryption.
+///
+/// This function encrypts data using RSA-OAEP (Optimal Asymmetric Encryption
+/// Padding) with SHA-256. RSA can only encrypt small amounts of data (typically
+/// up to key_size - 42 bytes for OAEP with SHA-256). For larger messages,
+/// consider using RSA to encrypt a symmetric key and then encrypt the message
+/// with that key.
+///
+/// # Arguments
+///
+/// * `rng` - A cryptographically secure random number generator
+/// * `plaintext` - The message to encrypt (must be smaller than key_size - 42 bytes)
+/// * `public_key` - The recipient's RSA public key
+///
+/// # Returns
+///
+/// * `Ok(Vec<u8>)` - Encrypted ciphertext
+/// * `Err(BottleError::Encryption)` - If encryption fails
+///
+/// # Example
+///
+/// ```rust
+/// use rust_bottle::ecdh::rsa_encrypt;
+/// use rust_bottle::keys::RsaKey;
+/// use rand::rngs::OsRng;
+///
+/// let rng = &mut OsRng;
+/// let key = RsaKey::generate(rng, 2048).unwrap();
+/// let plaintext = b"Small message";
+///
+/// let ciphertext = rsa_encrypt(rng, plaintext, key.public_key()).unwrap();
+/// ```
+pub fn rsa_encrypt<R: RngCore + CryptoRng>(
+    rng: &mut R,
+    plaintext: &[u8],
+    public_key: &rsa::RsaPublicKey,
+) -> Result<Vec<u8>> {
+    use rsa::Oaep;
+    use sha2::Sha256;
+    
+    // RSA-OAEP with SHA-256
+    let padding = Oaep::new::<Sha256>();
+    public_key.encrypt(rng, padding, plaintext)
+        .map_err(|e| BottleError::Encryption(format!("RSA encryption failed: {}", e)))
+}
+
+/// RSA-OAEP decryption.
+///
+/// This function decrypts data encrypted with RSA-OAEP.
+///
+/// # Arguments
+///
+/// * `ciphertext` - The encrypted data
+/// * `rsa_key` - The recipient's RSA key (as RsaKey)
+///
+/// # Returns
+///
+/// * `Ok(Vec<u8>)` - Decrypted plaintext
+/// * `Err(BottleError::Decryption)` - If decryption fails
+///
+/// # Example
+///
+/// ```rust
+/// use rust_bottle::ecdh::{rsa_encrypt, rsa_decrypt};
+/// use rust_bottle::keys::RsaKey;
+/// use rand::rngs::OsRng;
+///
+/// let rng = &mut OsRng;
+/// let key = RsaKey::generate(rng, 2048).unwrap();
+/// let plaintext = b"Small message";
+///
+/// let ciphertext = rsa_encrypt(rng, plaintext, key.public_key()).unwrap();
+/// let decrypted = rsa_decrypt(&ciphertext, &key).unwrap();
+/// assert_eq!(decrypted, plaintext);
+/// ```
+pub fn rsa_decrypt(
+    ciphertext: &[u8],
+    rsa_key: &crate::keys::RsaKey,
+) -> Result<Vec<u8>> {
+    rsa_key.decrypt(ciphertext)
+}
+

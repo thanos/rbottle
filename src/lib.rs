@@ -72,7 +72,7 @@ pub use membership::Membership;
 pub use signing::{Sign, Verify};
 
 /// ECDH encryption and decryption functions
-pub use ecdh::{ecdh_encrypt, ecdh_decrypt, ECDHEncrypt, ECDHDecrypt};
+pub use ecdh::{ecdh_encrypt, ecdh_decrypt, ECDHEncrypt, ECDHDecrypt, rsa_encrypt, rsa_decrypt};
 
 /// Post-quantum encryption functions (requires `ml-kem` feature)
 #[cfg(feature = "ml-kem")]
@@ -83,7 +83,7 @@ pub use ecdh::{
 };
 
 /// Cryptographic key types (classical)
-pub use keys::{EcdsaP256Key, Ed25519Key, X25519Key};
+pub use keys::{EcdsaP256Key, Ed25519Key, X25519Key, RsaKey};
 
 /// Post-quantum signature key types (requires `post-quantum` feature)
 #[cfg(feature = "post-quantum")]
