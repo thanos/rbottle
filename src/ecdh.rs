@@ -4,7 +4,42 @@ use p256::{PublicKey, SecretKey};
 use rand::{CryptoRng, RngCore};
 use x25519_dalek::{PublicKey as X25519PublicKey, StaticSecret};
 
-/// ECDH encryption using P-256
+/// ECDH encryption using P-256 elliptic curve.
+///
+/// This function performs Elliptic Curve Diffie-Hellman key exchange using
+/// the P-256 (secp256r1) curve. It generates an ephemeral key pair, computes
+/// a shared secret with the recipient's public key, derives an AES-256-GCM
+/// encryption key, and encrypts the plaintext.
+///
+/// # Arguments
+///
+/// * `rng` - A cryptographically secure random number generator
+/// * `plaintext` - The message to encrypt
+/// * `public_key` - The recipient's P-256 public key
+///
+/// # Returns
+///
+/// * `Ok(Vec<u8>)` - Encrypted data: ephemeral public key (65 bytes) + ciphertext
+/// * `Err(BottleError::Encryption)` - If encryption fails
+///
+/// # Format
+///
+/// The output format is: `[ephemeral_public_key (65 bytes)][encrypted_data]`
+///
+/// # Example
+///
+/// ```rust
+/// use rbottle::ecdh::ecdh_encrypt_p256;
+/// use rbottle::keys::EcdsaP256Key;
+/// use rand::rngs::OsRng;
+///
+/// let rng = &mut OsRng;
+/// let key = EcdsaP256Key::generate(rng);
+/// let pub_key = p256::PublicKey::from_sec1_bytes(&key.public_key_bytes()).unwrap();
+///
+/// let plaintext = b"Secret message";
+/// let ciphertext = ecdh_encrypt_p256(rng, plaintext, &pub_key).unwrap();
+/// ```
 pub fn ecdh_encrypt_p256<R: RngCore + CryptoRng>(
     rng: &mut R,
     plaintext: &[u8],
@@ -31,7 +66,42 @@ pub fn ecdh_encrypt_p256<R: RngCore + CryptoRng>(
     Ok(result)
 }
 
-/// ECDH decryption using P-256
+/// ECDH decryption using P-256 elliptic curve.
+///
+/// This function decrypts data encrypted with `ecdh_encrypt_p256`. It extracts
+/// the ephemeral public key from the ciphertext, computes the shared secret
+/// using the recipient's private key, derives the AES-256-GCM key, and decrypts.
+///
+/// # Arguments
+///
+/// * `ciphertext` - Encrypted data: ephemeral public key (65 bytes) + ciphertext
+/// * `private_key` - The recipient's P-256 private key
+///
+/// # Returns
+///
+/// * `Ok(Vec<u8>)` - Decrypted plaintext
+/// * `Err(BottleError::InvalidFormat)` - If ciphertext is too short
+/// * `Err(BottleError::Decryption)` - If decryption fails
+///
+/// # Example
+///
+/// ```rust
+/// use rbottle::ecdh::{ecdh_encrypt_p256, ecdh_decrypt_p256};
+/// use rbottle::keys::EcdsaP256Key;
+/// use rand::rngs::OsRng;
+/// use p256::elliptic_curve::sec1::FromEncodedPoint;
+///
+/// let rng = &mut OsRng;
+/// let key = EcdsaP256Key::generate(rng);
+/// let pub_key = p256::PublicKey::from_sec1_bytes(&key.public_key_bytes()).unwrap();
+/// let priv_key_bytes = key.private_key_bytes();
+/// let priv_key = p256::SecretKey::from_bytes(priv_key_bytes.as_slice().into()).unwrap();
+///
+/// let plaintext = b"Secret message";
+/// let ciphertext = ecdh_encrypt_p256(rng, plaintext, &pub_key).unwrap();
+/// let decrypted = ecdh_decrypt_p256(&ciphertext, &priv_key).unwrap();
+/// assert_eq!(decrypted, plaintext);
+/// ```
 pub fn ecdh_decrypt_p256(
     ciphertext: &[u8],
     private_key: &SecretKey,
@@ -60,7 +130,43 @@ pub fn ecdh_decrypt_p256(
     decrypt_aes_gcm(&key, &ciphertext[65..])
 }
 
-/// X25519 ECDH encryption
+/// X25519 ECDH encryption.
+///
+/// This function performs Elliptic Curve Diffie-Hellman key exchange using
+/// the X25519 curve (Curve25519). It generates an ephemeral key pair, computes
+/// a shared secret with the recipient's public key, derives an AES-256-GCM
+/// encryption key, and encrypts the plaintext.
+///
+/// # Arguments
+///
+/// * `rng` - A random number generator
+/// * `plaintext` - The message to encrypt
+/// * `public_key` - The recipient's X25519 public key
+///
+/// # Returns
+///
+/// * `Ok(Vec<u8>)` - Encrypted data: ephemeral public key (32 bytes) + ciphertext
+/// * `Err(BottleError::Encryption)` - If encryption fails
+///
+/// # Format
+///
+/// The output format is: `[ephemeral_public_key (32 bytes)][encrypted_data]`
+///
+/// # Example
+///
+/// ```rust
+/// use rbottle::ecdh::ecdh_encrypt_x25519;
+/// use rbottle::keys::X25519Key;
+/// use rand::rngs::OsRng;
+///
+/// let rng = &mut OsRng;
+/// let key = X25519Key::generate(rng);
+/// let pub_key_bytes: [u8; 32] = key.public_key_bytes().try_into().unwrap();
+/// let pub_key = x25519_dalek::PublicKey::from(pub_key_bytes);
+///
+/// let plaintext = b"Secret message";
+/// let ciphertext = ecdh_encrypt_x25519(rng, plaintext, &pub_key).unwrap();
+/// ```
 pub fn ecdh_encrypt_x25519<R: RngCore>(
     rng: &mut R,
     plaintext: &[u8],
@@ -91,7 +197,41 @@ pub fn ecdh_encrypt_x25519<R: RngCore>(
     Ok(result)
 }
 
-/// X25519 ECDH decryption
+/// X25519 ECDH decryption.
+///
+/// This function decrypts data encrypted with `ecdh_encrypt_x25519`. It extracts
+/// the ephemeral public key from the ciphertext, computes the shared secret
+/// using the recipient's private key, derives the AES-256-GCM key, and decrypts.
+///
+/// # Arguments
+///
+/// * `ciphertext` - Encrypted data: ephemeral public key (32 bytes) + ciphertext
+/// * `private_key` - The recipient's X25519 private key (32 bytes)
+///
+/// # Returns
+///
+/// * `Ok(Vec<u8>)` - Decrypted plaintext
+/// * `Err(BottleError::InvalidFormat)` - If ciphertext is too short
+/// * `Err(BottleError::Decryption)` - If decryption fails
+///
+/// # Example
+///
+/// ```rust
+/// use rbottle::ecdh::{ecdh_encrypt_x25519, ecdh_decrypt_x25519};
+/// use rbottle::keys::X25519Key;
+/// use rand::rngs::OsRng;
+///
+/// let rng = &mut OsRng;
+/// let key = X25519Key::generate(rng);
+/// let pub_key_bytes: [u8; 32] = key.public_key_bytes().try_into().unwrap();
+/// let pub_key = x25519_dalek::PublicKey::from(pub_key_bytes);
+/// let priv_key_bytes: [u8; 32] = key.private_key_bytes().try_into().unwrap();
+///
+/// let plaintext = b"Secret message";
+/// let ciphertext = ecdh_encrypt_x25519(rng, plaintext, &pub_key).unwrap();
+/// let decrypted = ecdh_decrypt_x25519(&ciphertext, &priv_key_bytes).unwrap();
+/// assert_eq!(decrypted, plaintext);
+/// ```
 pub fn ecdh_decrypt_x25519(
     ciphertext: &[u8],
     private_key: &[u8; 32],
@@ -116,17 +256,59 @@ pub fn ecdh_decrypt_x25519(
     decrypt_aes_gcm(&key, &ciphertext[32..])
 }
 
-/// Trait for ECDH encryption
+/// Trait for ECDH encryption operations.
+///
+/// This trait allows different ECDH implementations to be used polymorphically.
+/// Currently not used in the public API but available for extension.
 pub trait ECDHEncrypt {
+    /// Encrypt plaintext to a public key using ECDH.
     fn encrypt<R: RngCore>(&self, rng: &mut R, plaintext: &[u8], public_key: &[u8]) -> Result<Vec<u8>>;
 }
 
-/// Trait for ECDH decryption
+/// Trait for ECDH decryption operations.
+///
+/// This trait allows different ECDH implementations to be used polymorphically.
+/// Currently not used in the public API but available for extension.
 pub trait ECDHDecrypt {
+    /// Decrypt ciphertext using a private key.
     fn decrypt(&self, ciphertext: &[u8], private_key: &[u8]) -> Result<Vec<u8>>;
 }
 
-/// Generic ECDH encrypt function
+/// Generic ECDH encryption function with automatic key type detection.
+///
+/// This function automatically detects the key type based on the public key
+/// length and format, then uses the appropriate ECDH implementation.
+///
+/// # Key Type Detection
+///
+/// * 32 bytes: X25519 (Curve25519)
+/// * 64 or 65 bytes: P-256 (secp256r1) in SEC1 format
+///
+/// # Arguments
+///
+/// * `rng` - A cryptographically secure random number generator
+/// * `plaintext` - The message to encrypt
+/// * `public_key` - The recipient's public key (any supported format)
+///
+/// # Returns
+///
+/// * `Ok(Vec<u8>)` - Encrypted data with ephemeral public key prepended
+/// * `Err(BottleError::InvalidKeyType)` - If the key format is not recognized
+/// * `Err(BottleError::Encryption)` - If encryption fails
+///
+/// # Example
+///
+/// ```rust
+/// use rbottle::ecdh::ecdh_encrypt;
+/// use rbottle::keys::X25519Key;
+/// use rand::rngs::OsRng;
+///
+/// let rng = &mut OsRng;
+/// let key = X25519Key::generate(rng);
+/// let plaintext = b"Secret message";
+///
+/// let ciphertext = ecdh_encrypt(rng, plaintext, &key.public_key_bytes()).unwrap();
+/// ```
 pub fn ecdh_encrypt<R: RngCore + CryptoRng>(
     rng: &mut R,
     plaintext: &[u8],
@@ -148,7 +330,41 @@ pub fn ecdh_encrypt<R: RngCore + CryptoRng>(
     }
 }
 
-/// Generic ECDH decrypt function
+/// Generic ECDH decryption function with automatic key type detection.
+///
+/// This function automatically detects the key type and uses the appropriate
+/// decryption implementation. It tries X25519 first, then P-256.
+///
+/// # Key Type Detection
+///
+/// * 32 bytes: Tries X25519 first, then P-256 if X25519 fails
+///
+/// # Arguments
+///
+/// * `ciphertext` - Encrypted data with ephemeral public key prepended
+/// * `private_key` - The recipient's private key
+///
+/// # Returns
+///
+/// * `Ok(Vec<u8>)` - Decrypted plaintext
+/// * `Err(BottleError::InvalidKeyType)` - If the key format is not recognized
+/// * `Err(BottleError::Decryption)` - If decryption fails
+///
+/// # Example
+///
+/// ```rust
+/// use rbottle::ecdh::{ecdh_encrypt, ecdh_decrypt};
+/// use rbottle::keys::X25519Key;
+/// use rand::rngs::OsRng;
+///
+/// let rng = &mut OsRng;
+/// let key = X25519Key::generate(rng);
+/// let plaintext = b"Secret message";
+///
+/// let ciphertext = ecdh_encrypt(rng, plaintext, &key.public_key_bytes()).unwrap();
+/// let decrypted = ecdh_decrypt(&ciphertext, &key.private_key_bytes()).unwrap();
+/// assert_eq!(decrypted, plaintext);
+/// ```
 pub fn ecdh_decrypt(ciphertext: &[u8], private_key: &[u8]) -> Result<Vec<u8>> {
     // Try X25519 first (32 bytes)
     if private_key.len() == 32 && ciphertext.len() >= 32 {
@@ -179,6 +395,20 @@ pub fn ecdh_decrypt(ciphertext: &[u8], private_key: &[u8]) -> Result<Vec<u8>> {
 }
 
 // Helper functions
+
+/// Derive a 32-byte encryption key from a shared secret using SHA-256.
+///
+/// This function uses SHA-256 to derive a deterministic encryption key
+/// from the ECDH shared secret. The output is always 32 bytes, suitable
+/// for AES-256.
+///
+/// # Arguments
+///
+/// * `shared_secret` - The ECDH shared secret bytes
+///
+/// # Returns
+///
+/// A 32-byte array containing the derived key
 fn derive_key(shared_secret: &[u8]) -> [u8; 32] {
     use sha2::Sha256;
     use sha2::Digest;
@@ -190,6 +420,30 @@ fn derive_key(shared_secret: &[u8]) -> [u8; 32] {
     key
 }
 
+/// Encrypt plaintext using AES-256-GCM authenticated encryption.
+///
+/// This function uses AES-256-GCM for authenticated encryption with
+/// associated data (AEAD). It generates a random 12-byte nonce and
+/// prepends it to the ciphertext.
+///
+/// # Arguments
+///
+/// * `key` - 32-byte AES-256 key
+/// * `plaintext` - The message to encrypt
+///
+/// # Returns
+///
+/// * `Ok(Vec<u8>)` - Encrypted data: nonce (12 bytes) + ciphertext + tag (16 bytes)
+/// * `Err(BottleError::Encryption)` - If encryption fails
+///
+/// # Format
+///
+/// The output format is: `[nonce (12 bytes)][ciphertext + tag (16 bytes)]`
+///
+/// # Security Note
+///
+/// The nonce is randomly generated for each encryption operation. The
+/// authentication tag is automatically appended by the GCM mode.
 fn encrypt_aes_gcm(key: &[u8; 32], plaintext: &[u8]) -> Result<Vec<u8>> {
     use ring::aead::{self, BoundKey, NonceSequence, UnboundKey};
     use ring::rand::{SecureRandom, SystemRandom};
@@ -214,7 +468,6 @@ fn encrypt_aes_gcm(key: &[u8; 32], plaintext: &[u8]) -> Result<Vec<u8>> {
     let mut sealing_key = aead::SealingKey::new(unbound_key, SingleNonceSequence(nonce_bytes));
     
     let mut in_out = plaintext.to_vec();
-    let tag_len = sealing_key.algorithm().tag_len();
     // The issue: seal_in_place_append_tag encrypts the ENTIRE buffer
     // So if we extend with zeros, it encrypts those zeros too
     // Solution: Don't extend the buffer. The function should handle tag space.
@@ -245,6 +498,27 @@ fn encrypt_aes_gcm(key: &[u8; 32], plaintext: &[u8]) -> Result<Vec<u8>> {
     Ok(result)
 }
 
+/// Decrypt ciphertext using AES-256-GCM authenticated encryption.
+///
+/// This function decrypts data encrypted with `encrypt_aes_gcm`. It extracts
+/// the nonce, verifies the authentication tag, and returns the plaintext.
+///
+/// # Arguments
+///
+/// * `key` - 32-byte AES-256 key (same as used for encryption)
+/// * `ciphertext` - Encrypted data: nonce (12 bytes) + ciphertext + tag (16 bytes)
+///
+/// # Returns
+///
+/// * `Ok(Vec<u8>)` - Decrypted plaintext (with padding zeros removed if present)
+/// * `Err(BottleError::InvalidFormat)` - If ciphertext is too short
+/// * `Err(BottleError::Decryption)` - If decryption or authentication fails
+///
+/// # Security Note
+///
+/// This function automatically verifies the authentication tag. If verification
+/// fails, decryption returns an error. The function also trims trailing zeros
+/// that may have been added during encryption for tag space.
 fn decrypt_aes_gcm(key: &[u8; 32], ciphertext: &[u8]) -> Result<Vec<u8>> {
     use ring::aead::{self, BoundKey, NonceSequence, OpeningKey, UnboundKey};
     
