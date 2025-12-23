@@ -10,9 +10,9 @@ repository = "https://github.com/thanos/rust-bottle"
 [dependencies]
 # Cryptographic primitives
 ring = "0.17"
-ed25519-dalek = { version = "2.1", features = ["rand_core"] }
+ed25519-dalek = { version = "2.1", features = ["rand_core", "pkcs8"] }
 ecdsa = "0.16"
-p256 = { version = "0.13", features = ["ecdh", "arithmetic"] }
+p256 = { version = "0.13", features = ["ecdh", "arithmetic", "pkcs8"] }
 p384 = { version = "0.13", features = ["ecdh", "arithmetic"] }
 p521 = { version = "0.13", features = ["ecdh", "arithmetic"] }
 rsa = "0.9"
@@ -27,6 +27,12 @@ bincode = "1.3"
 hex = "0.4"
 thiserror = "1.0"
 zeroize = { version = "1.7", features = ["zeroize_derive"] }
+# PKIX/PKCS#8 key serialization
+pkcs8 = { version = "0.10", features = ["pem", "std"] }
+spki = { version = "0.7", features = ["pem", "std"] }
+der = { version = "0.7", features = ["std"] }
+const-oid = { version = "0.9", features = ["db"] }
+pem = "2.0"
 # Post-quantum cryptography (optional features)
 # Note: pqcrypto-kyber v0.5 has a bug where AVX2 FFI functions are referenced on non-x86
 # architectures (like AArch64/macOS ARM), causing compilation failures. On AArch64, the
@@ -63,3 +69,7 @@ path = "tests/aliceandbob_test.rs"
 [[test]]
 name = "pqc"
 path = "tests/pqc_test.rs"
+
+[[test]]
+name = "pkix"
+path = "tests/pkix_test.rs"

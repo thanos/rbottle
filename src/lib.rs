@@ -49,6 +49,7 @@ pub mod idcard;
 pub mod keychain;
 pub mod keys;
 pub mod membership;
+pub mod pkix;
 pub mod signing;
 pub mod utils;
 
@@ -94,4 +95,7 @@ pub use keys::{
 /// Post-quantum encryption key types (requires `ml-kem` feature)
 #[cfg(feature = "ml-kem")]
 pub use keys::{MlKem768Key, MlKem1024Key};
+
+/// PKIX/PKCS#8 key serialization
+pub use pkix::{KeyType, marshal_pkix_public_key, marshal_pkix_public_key_pem, marshal_pkix_public_key_with_type, parse_pkix_public_key, parse_pkix_public_key_pem, marshal_pkcs8_private_key, marshal_pkcs8_private_key_pem, parse_pkcs8_private_key, parse_pkcs8_private_key_pem};
 
