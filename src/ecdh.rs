@@ -277,12 +277,14 @@ pub trait ECDHDecrypt {
 /// Generic ECDH encryption function with automatic key type detection.
 ///
 /// This function automatically detects the key type based on the public key
-/// length and format, then uses the appropriate ECDH implementation.
+/// length and format, then uses the appropriate encryption implementation.
 ///
 /// # Key Type Detection
 ///
 /// * 32 bytes: X25519 (Curve25519)
 /// * 64 or 65 bytes: P-256 (secp256r1) in SEC1 format
+/// * 1184 bytes: ML-KEM-768 public key
+/// * 1568 bytes: ML-KEM-1024 public key
 ///
 /// # Arguments
 ///
@@ -326,6 +328,16 @@ pub fn ecdh_encrypt<R: RngCore + CryptoRng>(
             .map_err(|_| BottleError::InvalidKeyType)?;
         ecdh_encrypt_p256(rng, plaintext, &pub_key)
     } else {
+        #[cfg(feature = "ml-kem")]
+        {
+            if public_key.len() == 1184 {
+                // ML-KEM-768 public key
+                return mlkem768_encrypt(rng, plaintext, public_key);
+            } else if public_key.len() == 1568 {
+                // ML-KEM-1024 public key
+                return mlkem1024_encrypt(rng, plaintext, public_key);
+            }
+        }
         Err(BottleError::InvalidKeyType)
     }
 }
@@ -333,11 +345,13 @@ pub fn ecdh_encrypt<R: RngCore + CryptoRng>(
 /// Generic ECDH decryption function with automatic key type detection.
 ///
 /// This function automatically detects the key type and uses the appropriate
-/// decryption implementation. It tries X25519 first, then P-256.
+/// decryption implementation. It tries X25519 first, then P-256, then ML-KEM.
 ///
 /// # Key Type Detection
 ///
 /// * 32 bytes: Tries X25519 first, then P-256 if X25519 fails
+/// * 2400 bytes: ML-KEM-768 secret key
+/// * 3168 bytes: ML-KEM-1024 secret key
 ///
 /// # Arguments
 ///
@@ -366,6 +380,23 @@ pub fn ecdh_encrypt<R: RngCore + CryptoRng>(
 /// assert_eq!(decrypted, plaintext);
 /// ```
 pub fn ecdh_decrypt(ciphertext: &[u8], private_key: &[u8]) -> Result<Vec<u8>> {
+    #[cfg(feature = "ml-kem")]
+    {
+        // Try ML-KEM-768 (2400 bytes secret key)
+        if private_key.len() == 2400 {
+            if let Ok(result) = mlkem768_decrypt(ciphertext, private_key) {
+                return Ok(result);
+            }
+        }
+        
+        // Try ML-KEM-1024 (3168 bytes secret key)
+        if private_key.len() == 3168 {
+            if let Ok(result) = mlkem1024_decrypt(ciphertext, private_key) {
+                return Ok(result);
+            }
+        }
+    }
+    
     // Try X25519 first (32 bytes)
     if private_key.len() == 32 && ciphertext.len() >= 32 {
         // Try to create X25519 key
@@ -392,6 +423,230 @@ pub fn ecdh_decrypt(ciphertext: &[u8], private_key: &[u8]) -> Result<Vec<u8>> {
     }
     
     Err(BottleError::InvalidKeyType)
+}
+
+#[cfg(feature = "ml-kem")]
+/// ML-KEM-768 encryption (post-quantum).
+///
+/// This function performs ML-KEM key encapsulation and encrypts the plaintext
+/// using the derived shared secret with AES-256-GCM.
+///
+/// # Arguments
+///
+/// * `rng` - A cryptographically secure random number generator (not used, ML-KEM is deterministic)
+/// * `plaintext` - The message to encrypt
+/// * `public_key` - The recipient's ML-KEM-768 public key (1184 bytes)
+///
+/// # Returns
+///
+/// * `Ok(Vec<u8>)` - Encrypted data: ML-KEM ciphertext (1088 bytes) + AES-GCM encrypted message
+/// * `Err(BottleError::Encryption)` - If encryption fails
+/// * `Err(BottleError::InvalidKeyType)` - If the key format is invalid
+#[cfg(feature = "ml-kem")]
+pub fn mlkem768_encrypt<R: RngCore + CryptoRng>(
+    _rng: &mut R,
+    plaintext: &[u8],
+    public_key: &[u8],
+) -> Result<Vec<u8>> {
+    // Parse public key
+    let pub_key = pqcrypto_kyber::pqcrypto_kyber768::public_key_from_bytes(public_key)
+        .map_err(|_| BottleError::InvalidKeyType)?;
+    
+    // Encapsulate (generate shared secret and ciphertext)
+    let (ciphertext, shared_secret) = pqcrypto_kyber::pqcrypto_kyber768::encapsulate(&pub_key);
+    
+    // Derive AES key from shared secret
+    let key = derive_key(&shared_secret);
+    
+    // Encrypt plaintext with AES-GCM
+    let encrypted = encrypt_aes_gcm(&key, plaintext)?;
+    
+    // Combine: ML-KEM ciphertext + AES-GCM encrypted data
+    let mut result = ciphertext.to_vec();
+    result.extend_from_slice(&encrypted);
+    
+    Ok(result)
+}
+
+#[cfg(feature = "ml-kem")]
+/// ML-KEM-768 decryption (post-quantum).
+///
+/// # Arguments
+///
+/// * `ciphertext` - Encrypted data: ML-KEM ciphertext (1088 bytes) + AES-GCM encrypted message
+/// * `secret_key` - The recipient's ML-KEM-768 secret key (2400 bytes)
+///
+/// # Returns
+///
+/// * `Ok(Vec<u8>)` - Decrypted plaintext
+/// * `Err(BottleError::Decryption)` - If decryption fails
+/// * `Err(BottleError::InvalidFormat)` - If ciphertext is too short
+#[cfg(feature = "ml-kem")]
+pub fn mlkem768_decrypt(
+    ciphertext: &[u8],
+    secret_key: &[u8],
+) -> Result<Vec<u8>> {
+    // Parse secret key
+    let sec_key = pqcrypto_kyber::pqcrypto_kyber768::secret_key_from_bytes(secret_key)
+        .map_err(|_| BottleError::InvalidKeyType)?;
+    
+    // Extract ML-KEM ciphertext (first 1088 bytes for ML-KEM-768)
+    if ciphertext.len() < 1088 {
+        return Err(BottleError::InvalidFormat);
+    }
+    let mlkem_ct = &ciphertext[..1088];
+    let aes_ct = &ciphertext[1088..];
+    
+    // Decapsulate to get shared secret
+    let shared_secret = pqcrypto_kyber::pqcrypto_kyber768::decapsulate(mlkem_ct, &sec_key);
+    
+    // Derive AES key
+    let key = derive_key(&shared_secret);
+    
+    // Decrypt with AES-GCM
+    decrypt_aes_gcm(&key, aes_ct)
+}
+
+#[cfg(feature = "ml-kem")]
+/// ML-KEM-1024 encryption (post-quantum).
+///
+/// # Arguments
+///
+/// * `rng` - A cryptographically secure random number generator (not used)
+/// * `plaintext` - The message to encrypt
+/// * `public_key` - The recipient's ML-KEM-1024 public key (1568 bytes)
+///
+/// # Returns
+///
+/// * `Ok(Vec<u8>)` - Encrypted data: ML-KEM ciphertext (1568 bytes) + AES-GCM encrypted message
+#[cfg(feature = "ml-kem")]
+pub fn mlkem1024_encrypt<R: RngCore + CryptoRng>(
+    _rng: &mut R,
+    plaintext: &[u8],
+    public_key: &[u8],
+) -> Result<Vec<u8>> {
+    let pub_key = pqcrypto_kyber::pqcrypto_kyber1024::public_key_from_bytes(public_key)
+        .map_err(|_| BottleError::InvalidKeyType)?;
+    
+    let (ciphertext, shared_secret) = pqcrypto_kyber::pqcrypto_kyber1024::encapsulate(&pub_key);
+    let key = derive_key(&shared_secret);
+    let encrypted = encrypt_aes_gcm(&key, plaintext)?;
+    
+    let mut result = ciphertext.to_vec();
+    result.extend_from_slice(&encrypted);
+    Ok(result)
+}
+
+#[cfg(feature = "ml-kem")]
+/// ML-KEM-1024 decryption (post-quantum).
+///
+/// # Arguments
+///
+/// * `ciphertext` - Encrypted data: ML-KEM ciphertext (1568 bytes) + AES-GCM encrypted message
+/// * `secret_key` - The recipient's ML-KEM-1024 secret key (3168 bytes)
+///
+/// # Returns
+///
+/// * `Ok(Vec<u8>)` - Decrypted plaintext
+#[cfg(feature = "ml-kem")]
+pub fn mlkem1024_decrypt(
+    ciphertext: &[u8],
+    secret_key: &[u8],
+) -> Result<Vec<u8>> {
+    let sec_key = pqcrypto_kyber::pqcrypto_kyber1024::secret_key_from_bytes(secret_key)
+        .map_err(|_| BottleError::InvalidKeyType)?;
+    
+    // ML-KEM-1024 ciphertext is 1568 bytes
+    if ciphertext.len() < 1568 {
+        return Err(BottleError::InvalidFormat);
+    }
+    let mlkem_ct = &ciphertext[..1568];
+    let aes_ct = &ciphertext[1568..];
+    
+    let shared_secret = pqcrypto_kyber::pqcrypto_kyber1024::decapsulate(mlkem_ct, &sec_key);
+    let key = derive_key(&shared_secret);
+    decrypt_aes_gcm(&key, aes_ct)
+}
+
+#[cfg(feature = "ml-kem")]
+/// Hybrid encryption: ML-KEM-768 + X25519.
+///
+/// This provides both post-quantum and classical security by combining
+/// ML-KEM and X25519 key exchange. The plaintext is encrypted with both
+/// algorithms, and either can be used for decryption.
+///
+/// # Arguments
+///
+/// * `rng` - A cryptographically secure random number generator
+/// * `plaintext` - The message to encrypt
+/// * `mlkem_pub` - ML-KEM-768 public key (1184 bytes)
+/// * `x25519_pub` - X25519 public key (32 bytes)
+///
+/// # Returns
+///
+/// * `Ok(Vec<u8>)` - Encrypted data: [mlkem_len: u32][mlkem_ct][x25519_ct]
+#[cfg(feature = "ml-kem")]
+pub fn hybrid_encrypt_mlkem768_x25519<R: RngCore + CryptoRng>(
+    rng: &mut R,
+    plaintext: &[u8],
+    mlkem_pub: &[u8],
+    x25519_pub: &[u8],
+) -> Result<Vec<u8>> {
+    // Encrypt with both ML-KEM and X25519
+    let mlkem_ct = mlkem768_encrypt(rng, plaintext, mlkem_pub)?;
+    let x25519_pub_bytes: [u8; 32] = x25519_pub.try_into()
+        .map_err(|_| BottleError::InvalidKeyType)?;
+    let x25519_pub_key = X25519PublicKey::from(x25519_pub_bytes);
+    let x25519_ct = ecdh_encrypt_x25519(rng, plaintext, &x25519_pub_key)?;
+    
+    // Combine: ML-KEM ciphertext + X25519 ciphertext
+    // Format: [mlkem_len: u32][mlkem_ct][x25519_ct]
+    let mut result = Vec::new();
+    result.extend_from_slice(&(mlkem_ct.len() as u32).to_le_bytes());
+    result.extend_from_slice(&mlkem_ct);
+    result.extend_from_slice(&x25519_ct);
+    
+    Ok(result)
+}
+
+#[cfg(feature = "ml-kem")]
+/// Hybrid decryption: ML-KEM-768 + X25519.
+///
+/// Attempts to decrypt using ML-KEM first, then falls back to X25519.
+///
+/// # Arguments
+///
+/// * `ciphertext` - Encrypted data: [mlkem_len: u32][mlkem_ct][x25519_ct]
+/// * `mlkem_sec` - ML-KEM-768 secret key (2400 bytes)
+/// * `x25519_sec` - X25519 secret key (32 bytes)
+///
+/// # Returns
+///
+/// * `Ok(Vec<u8>)` - Decrypted plaintext
+#[cfg(feature = "ml-kem")]
+pub fn hybrid_decrypt_mlkem768_x25519(
+    ciphertext: &[u8],
+    mlkem_sec: &[u8],
+    x25519_sec: &[u8; 32],
+) -> Result<Vec<u8>> {
+    if ciphertext.len() < 4 {
+        return Err(BottleError::InvalidFormat);
+    }
+    
+    // Extract lengths
+    let mlkem_len = u32::from_le_bytes(ciphertext[..4].try_into().unwrap()) as usize;
+    if ciphertext.len() < 4 + mlkem_len {
+        return Err(BottleError::InvalidFormat);
+    }
+    
+    let mlkem_ct = &ciphertext[4..4+mlkem_len];
+    let x25519_ct = &ciphertext[4+mlkem_len..];
+    
+    // Try ML-KEM first, fall back to X25519
+    match mlkem768_decrypt(mlkem_ct, mlkem_sec) {
+        Ok(plaintext) => Ok(plaintext),
+        Err(_) => ecdh_decrypt_x25519(x25519_ct, x25519_sec),
+    }
 }
 
 // Helper functions

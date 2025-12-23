@@ -73,6 +73,25 @@ pub use signing::{Sign, Verify};
 /// ECDH encryption and decryption functions
 pub use ecdh::{ecdh_encrypt, ecdh_decrypt, ECDHEncrypt, ECDHDecrypt};
 
-/// Cryptographic key types
+/// Post-quantum encryption functions (requires `ml-kem` feature)
+#[cfg(feature = "ml-kem")]
+pub use ecdh::{
+    mlkem768_encrypt, mlkem768_decrypt,
+    mlkem1024_encrypt, mlkem1024_decrypt,
+    hybrid_encrypt_mlkem768_x25519, hybrid_decrypt_mlkem768_x25519,
+};
+
+/// Cryptographic key types (classical)
 pub use keys::{EcdsaP256Key, Ed25519Key, X25519Key};
+
+/// Post-quantum signature key types (requires `post-quantum` feature)
+#[cfg(feature = "post-quantum")]
+pub use keys::{
+    MlDsa44Key, MlDsa65Key, MlDsa87Key,
+    SlhDsa128sKey, SlhDsa192sKey, SlhDsa256sKey,
+};
+
+/// Post-quantum encryption key types (requires `ml-kem` feature)
+#[cfg(feature = "ml-kem")]
+pub use keys::{MlKem768Key, MlKem1024Key};
 

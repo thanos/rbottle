@@ -7,14 +7,15 @@ This document provides comprehensive API documentation with detailed examples fo
 1. [Bottle API](#bottle-api)
 2. [Opener API](#opener-api)
 3. [Key Types API](#key-types-api)
-4. [ECDH Encryption API](#ecdh-encryption-api)
-5. [IDCard API](#idcard-api)
-6. [Keychain API](#keychain-api)
-7. [Membership API](#membership-api)
-8. [Signing and Verification API](#signing-and-verification-api)
-9. [Hash Functions API](#hash-functions-api)
-10. [Utility Functions API](#utility-functions-api)
-11. [Error Handling](#error-handling)
+4. [Post-Quantum Key Types API](#post-quantum-key-types-api)
+5. [ECDH Encryption API](#ecdh-encryption-api)
+6. [IDCard API](#idcard-api)
+7. [Keychain API](#keychain-api)
+8. [Membership API](#membership-api)
+9. [Signing and Verification API](#signing-and-verification-api)
+10. [Hash Functions API](#hash-functions-api)
+11. [Utility Functions API](#utility-functions-api)
+12. [Error Handling](#error-handling)
 
 ---
 
@@ -475,7 +476,7 @@ assert!(!info.is_signed_by(&other_key.public_key_bytes()));
 
 ## Key Types API
 
-The library provides three key types: `EcdsaP256Key`, `Ed25519Key`, and `X25519Key`.
+The library provides classical key types: `EcdsaP256Key`, `Ed25519Key`, and `X25519Key`. Post-quantum key types are available with feature flags (see [Post-Quantum Key Types API](#post-quantum-key-types-api)).
 
 ### ECDSA P-256 Keys
 
@@ -668,7 +669,7 @@ assert_eq!(original.public_key_bytes(), restored.public_key_bytes());
 
 ## ECDH Encryption API
 
-Direct ECDH encryption functions for encrypting data to public keys.
+Direct ECDH encryption functions for encrypting data to public keys. Supports both classical and post-quantum key types with automatic detection.
 
 ### `ecdh_encrypt<R: RngCore + CryptoRng>(rng: &mut R, plaintext: &[u8], public_key: &[u8]) -> Result<Vec<u8>>`
 
@@ -715,9 +716,9 @@ assert_eq!(decrypted, plaintext);
 
 ### `ecdh_decrypt(ciphertext: &[u8], private_key: &[u8]) -> Result<Vec<u8>>`
 
-Decrypts ciphertext using a private key with automatic key type detection.
+Decrypts ciphertext using a private key with automatic key type detection. Supports X25519, P-256, ML-KEM-768, and ML-KEM-1024.
 
-**Example:**
+**Example - Classical Keys:**
 ```rust
 use rbottle::ecdh::{ecdh_encrypt, ecdh_decrypt};
 use rbottle::keys::X25519Key;
@@ -731,6 +732,23 @@ let key = X25519Key::generate(rng);
 let ciphertext = ecdh_encrypt(rng, plaintext, &key.public_key_bytes()).unwrap();
 
 // Decrypt
+let decrypted = ecdh_decrypt(&ciphertext, &key.private_key_bytes()).unwrap();
+assert_eq!(decrypted, plaintext);
+```
+
+**Example - Post-Quantum Keys:**
+```rust
+#[cfg(feature = "ml-kem")]
+use rbottle::ecdh::{ecdh_encrypt, ecdh_decrypt};
+use rbottle::keys::MlKem768Key;
+use rand::rngs::OsRng;
+
+let plaintext = b"Post-quantum encrypted";
+let rng = &mut OsRng;
+let key = MlKem768Key::generate(rng);
+
+// Automatically detects ML-KEM-768 from key size
+let ciphertext = ecdh_encrypt(rng, plaintext, &key.public_key_bytes()).unwrap();
 let decrypted = ecdh_decrypt(&ciphertext, &key.private_key_bytes()).unwrap();
 assert_eq!(decrypted, plaintext);
 ```
@@ -816,6 +834,137 @@ let priv_key_bytes: [u8; 32] = key.private_key_bytes().try_into().unwrap();
 let plaintext = b"Message";
 let ciphertext = ecdh_encrypt_x25519(rng, plaintext, &pub_key).unwrap();
 let decrypted = ecdh_decrypt_x25519(&ciphertext, &priv_key_bytes).unwrap();
+assert_eq!(decrypted, plaintext);
+```
+
+### Post-Quantum Encryption Functions
+
+#### `mlkem768_encrypt<R: RngCore + CryptoRng>(rng: &mut R, plaintext: &[u8], public_key: &[u8]) -> Result<Vec<u8>>`
+
+Encrypts plaintext using ML-KEM-768 key encapsulation. Requires `ml-kem` feature.
+
+**Example:**
+```rust
+#[cfg(feature = "ml-kem")]
+use rbottle::ecdh::mlkem768_encrypt;
+use rbottle::keys::MlKem768Key;
+use rand::rngs::OsRng;
+
+let rng = &mut OsRng;
+let key = MlKem768Key::generate(rng);
+let plaintext = b"Secret message";
+
+let ciphertext = mlkem768_encrypt(rng, plaintext, &key.public_key_bytes()).unwrap();
+```
+
+#### `mlkem768_decrypt(ciphertext: &[u8], secret_key: &[u8]) -> Result<Vec<u8>>`
+
+Decrypts ciphertext encrypted with ML-KEM-768. Requires `ml-kem` feature.
+
+**Example:**
+```rust
+#[cfg(feature = "ml-kem")]
+use rbottle::ecdh::{mlkem768_encrypt, mlkem768_decrypt};
+use rbottle::keys::MlKem768Key;
+use rand::rngs::OsRng;
+
+let rng = &mut OsRng;
+let key = MlKem768Key::generate(rng);
+let plaintext = b"Secret message";
+
+let ciphertext = mlkem768_encrypt(rng, plaintext, &key.public_key_bytes()).unwrap();
+let decrypted = mlkem768_decrypt(&ciphertext, &key.private_key_bytes()).unwrap();
+assert_eq!(decrypted, plaintext);
+```
+
+#### `mlkem1024_encrypt<R: RngCore + CryptoRng>(rng: &mut R, plaintext: &[u8], public_key: &[u8]) -> Result<Vec<u8>>`
+
+Encrypts plaintext using ML-KEM-1024 key encapsulation. Requires `ml-kem` feature.
+
+**Example:**
+```rust
+#[cfg(feature = "ml-kem")]
+use rbottle::ecdh::mlkem1024_encrypt;
+use rbottle::keys::MlKem1024Key;
+use rand::rngs::OsRng;
+
+let rng = &mut OsRng;
+let key = MlKem1024Key::generate(rng);
+let plaintext = b"Secret message";
+
+let ciphertext = mlkem1024_encrypt(rng, plaintext, &key.public_key_bytes()).unwrap();
+```
+
+#### `mlkem1024_decrypt(ciphertext: &[u8], secret_key: &[u8]) -> Result<Vec<u8>>`
+
+Decrypts ciphertext encrypted with ML-KEM-1024. Requires `ml-kem` feature.
+
+**Example:**
+```rust
+#[cfg(feature = "ml-kem")]
+use rbottle::ecdh::{mlkem1024_encrypt, mlkem1024_decrypt};
+use rbottle::keys::MlKem1024Key;
+use rand::rngs::OsRng;
+
+let rng = &mut OsRng;
+let key = MlKem1024Key::generate(rng);
+let plaintext = b"Secret message";
+
+let ciphertext = mlkem1024_encrypt(rng, plaintext, &key.public_key_bytes()).unwrap();
+let decrypted = mlkem1024_decrypt(&ciphertext, &key.private_key_bytes()).unwrap();
+assert_eq!(decrypted, plaintext);
+```
+
+#### `hybrid_encrypt_mlkem768_x25519<R: RngCore + CryptoRng>(rng: &mut R, plaintext: &[u8], mlkem_pub: &[u8], x25519_pub: &[u8]) -> Result<Vec<u8>>`
+
+Hybrid encryption combining ML-KEM-768 and X25519 for both post-quantum and classical security. Requires `ml-kem` feature.
+
+**Example:**
+```rust
+#[cfg(feature = "ml-kem")]
+use rbottle::ecdh::hybrid_encrypt_mlkem768_x25519;
+use rbottle::keys::{MlKem768Key, X25519Key};
+use rand::rngs::OsRng;
+
+let rng = &mut OsRng;
+let mlkem_key = MlKem768Key::generate(rng);
+let x25519_key = X25519Key::generate(rng);
+let plaintext = b"Hybrid encrypted";
+
+let ciphertext = hybrid_encrypt_mlkem768_x25519(
+    rng,
+    plaintext,
+    &mlkem_key.public_key_bytes(),
+    &x25519_key.public_key_bytes(),
+).unwrap();
+```
+
+#### `hybrid_decrypt_mlkem768_x25519(ciphertext: &[u8], mlkem_sec: &[u8], x25519_sec: &[u8; 32]) -> Result<Vec<u8>>`
+
+Decrypts hybrid-encrypted ciphertext. Tries ML-KEM first, falls back to X25519. Requires `ml-kem` feature.
+
+**Example:**
+```rust
+#[cfg(feature = "ml-kem")]
+use rbottle::ecdh::{hybrid_encrypt_mlkem768_x25519, hybrid_decrypt_mlkem768_x25519};
+use rbottle::keys::{MlKem768Key, X25519Key};
+use rand::rngs::OsRng;
+
+let rng = &mut OsRng;
+let mlkem_key = MlKem768Key::generate(rng);
+let x25519_key = X25519Key::generate(rng);
+let plaintext = b"Hybrid encrypted";
+
+let ciphertext = hybrid_encrypt_mlkem768_x25519(
+    rng,
+    plaintext,
+    &mlkem_key.public_key_bytes(),
+    &x25519_key.public_key_bytes(),
+).unwrap();
+
+let mlkem_sec = mlkem_key.private_key_bytes();
+let x25519_sec: [u8; 32] = x25519_key.private_key_bytes().try_into().unwrap();
+let decrypted = hybrid_decrypt_mlkem768_x25519(&ciphertext, &mlkem_sec, &x25519_sec).unwrap();
 assert_eq!(decrypted, plaintext);
 ```
 

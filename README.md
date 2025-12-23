@@ -287,6 +287,159 @@ let decrypted = ecdh_decrypt(
 assert_eq!(decrypted, plaintext);
 ```
 
+### Post-Quantum Cryptography
+
+Post-quantum cryptography support is available via feature flags. See [PQC_FEATURE_FLAG.md](./PQC_FEATURE_FLAG.md) for details on enabling PQC features.
+
+#### ML-KEM Encryption
+
+ML-KEM (Module-Lattice-Based Key-Encapsulation Mechanism) provides post-quantum encryption. Requires the `ml-kem` feature:
+
+```rust
+#[cfg(feature = "ml-kem")]
+use rbottle::*;
+use rand::rngs::OsRng;
+
+let plaintext = b"Post-quantum encrypted message";
+let rng = &mut OsRng;
+
+// Generate ML-KEM-768 keys
+let alice_key = MlKem768Key::generate(rng);
+let bob_key = MlKem768Key::generate(rng);
+
+// Alice encrypts to Bob's public key
+let ciphertext = mlkem768_encrypt(
+    rng,
+    plaintext,
+    &bob_key.public_key_bytes()
+).unwrap();
+
+// Bob decrypts
+let decrypted = mlkem768_decrypt(
+    &ciphertext,
+    &bob_key.private_key_bytes()
+).unwrap();
+
+assert_eq!(decrypted, plaintext);
+```
+
+#### ML-DSA Signatures
+
+ML-DSA (Module-Lattice-Based Digital Signature Algorithm) provides post-quantum signatures. Requires the `post-quantum` feature:
+
+```rust
+#[cfg(feature = "post-quantum")]
+use rbottle::*;
+use rand::rngs::OsRng;
+
+let message = b"Post-quantum signed message";
+let rng = &mut OsRng;
+
+// Generate ML-DSA-44 signing key (128-bit security)
+let signing_key = MlDsa44Key::generate(rng);
+let pub_key = signing_key.public_key_bytes();
+
+// Sign the message
+let signature = signing_key.sign(rng, message).unwrap();
+
+// Verify signature
+assert!(signing_key.verify(message, &signature).is_ok());
+```
+
+#### SLH-DSA Signatures
+
+SLH-DSA (Stateless Hash-Based Digital Signature Algorithm) provides hash-based post-quantum signatures. Requires the `post-quantum` feature:
+
+```rust
+#[cfg(feature = "post-quantum")]
+use rbottle::*;
+use rand::rngs::OsRng;
+
+let message = b"Hash-based signed message";
+let rng = &mut OsRng;
+
+// Generate SLH-DSA-128s signing key (128-bit security)
+let signing_key = SlhDsa128sKey::generate(rng);
+let pub_key = signing_key.public_key_bytes();
+
+// Sign the message
+let signature = signing_key.sign(rng, message).unwrap();
+
+// Verify signature
+assert!(signing_key.verify(message, &signature).is_ok());
+```
+
+#### Hybrid Encryption (ML-KEM + X25519)
+
+Hybrid encryption provides both post-quantum and classical security. Requires the `ml-kem` feature:
+
+```rust
+#[cfg(feature = "ml-kem")]
+use rbottle::*;
+use rand::rngs::OsRng;
+
+let plaintext = b"Hybrid encrypted message";
+let rng = &mut OsRng;
+
+// Generate both post-quantum and classical keys
+let mlkem_key = MlKem768Key::generate(rng);
+let x25519_key = X25519Key::generate(rng);
+
+// Encrypt with both (provides both post-quantum and classical security)
+let ciphertext = hybrid_encrypt_mlkem768_x25519(
+    rng,
+    plaintext,
+    &mlkem_key.public_key_bytes(),
+    &x25519_key.public_key_bytes(),
+).unwrap();
+
+// Decrypt (tries ML-KEM first, falls back to X25519)
+let mlkem_sec = mlkem_key.private_key_bytes();
+let x25519_sec: [u8; 32] = x25519_key.private_key_bytes().try_into().unwrap();
+let decrypted = hybrid_decrypt_mlkem768_x25519(
+    &ciphertext,
+    &mlkem_sec,
+    &x25519_sec,
+).unwrap();
+
+assert_eq!(decrypted, plaintext);
+```
+
+#### Post-Quantum Bottles
+
+Post-quantum keys work seamlessly with the Bottle API:
+
+```rust
+#[cfg(feature = "post-quantum")]
+use rbottle::*;
+use rand::rngs::OsRng;
+
+let mut bottle = Bottle::new(b"Post-quantum secure message".to_vec());
+let rng = &mut OsRng;
+
+// Encrypt with ML-KEM (requires ml-kem feature)
+#[cfg(feature = "ml-kem")]
+{
+    let mlkem_key = MlKem768Key::generate(rng);
+    bottle.encrypt(rng, &mlkem_key.public_key_bytes()).unwrap();
+}
+
+// Sign with ML-DSA (requires post-quantum feature)
+let mldsa_key = MlDsa44Key::generate(rng);
+let pub_key = mldsa_key.public_key_bytes();
+bottle.sign(rng, &mldsa_key, &pub_key).unwrap();
+
+// Decrypt and verify
+let opener = Opener::new();
+#[cfg(feature = "ml-kem")]
+{
+    let mlkem_key = MlKem768Key::generate(rng);
+    let decrypted = opener.open(&bottle, Some(&mlkem_key.private_key_bytes())).unwrap();
+}
+let info = opener.open_info(&bottle).unwrap();
+assert!(info.is_signed_by(&pub_key));
+```
+
 ### P-256 ECDH Encryption
 
 The library also supports P-256 ECDH for compatibility with ECDSA keys.
@@ -330,7 +483,50 @@ assert_eq!(decrypted, plaintext);
 
 ### Post-Quantum Cryptography
 
-Post-quantum cryptography support (ML-KEM, ML-DSA, SLH-DSA) is planned for future releases. The dependencies are commented out in Cargo.toml and will be enabled when implementations are complete.
+Comprehensive post-quantum cryptography support is available via feature flags. The implementation includes:
+
+#### Available Algorithms
+
+**Encryption (requires `ml-kem` feature):**
+- **ML-KEM-768**: Post-quantum encryption (192-bit security) - 1184 byte public keys, 2400 byte secret keys
+- **ML-KEM-1024**: Post-quantum encryption (256-bit security) - 1568 byte public keys, 3168 byte secret keys
+
+**Signatures (requires `post-quantum` feature):**
+- **ML-DSA-44**: Post-quantum signatures (128-bit security) - Uses dilithium2
+- **ML-DSA-65**: Post-quantum signatures (192-bit security) - Uses dilithium3
+- **ML-DSA-87**: Post-quantum signatures (256-bit security) - Uses dilithium5
+- **SLH-DSA-128s**: Hash-based signatures (128-bit security) - Uses sphincsshake256128srobust
+- **SLH-DSA-192s**: Hash-based signatures (192-bit security) - Uses sphincsshake256192srobust
+- **SLH-DSA-256s**: Hash-based signatures (256-bit security) - Uses sphincsshake256256srobust
+
+**Hybrid Encryption (requires `ml-kem` feature):**
+- **ML-KEM-768 + X25519**: Combines post-quantum and classical security
+
+#### Enabling Post-Quantum Support
+
+```bash
+# Enable signatures only (ML-DSA and SLH-DSA)
+cargo build --features post-quantum
+
+# Enable encryption (ML-KEM) - may fail on macOS/ARM due to AVX2 bug
+cargo build --features post-quantum,ml-kem
+
+# Enable everything
+cargo build --features post-quantum,ml-kem
+```
+
+**Note**: On macOS/ARM (AArch64), `pqcrypto-kyber` v0.5 has a compilation bug where AVX2 functions are referenced even though the crate should use the "clean" (generic) implementation. ML-DSA and SLH-DSA signatures work fine. See [PQC_FEATURE_FLAG.md](./PQC_FEATURE_FLAG.md) for details.
+
+#### Integration
+
+All post-quantum algorithms are integrated into the existing API and work seamlessly with:
+- **Bottles**: Encrypt and sign with PQC keys
+- **IDCards**: Use PQC keys for signing and encryption
+- **Keychains**: Store and use PQC keys
+- **Memberships**: Sign memberships with PQC keys
+- **Automatic Key Detection**: `ecdh_encrypt`/`ecdh_decrypt` automatically detect PQC key types
+
+See [POST_QUANTUM.md](./POST_QUANTUM.md) for detailed documentation.
 
 ### RSA Support
 
@@ -464,21 +660,23 @@ Performance characteristics:
 
 ### Current Limitations
 
-1. **Post-Quantum Cryptography**: Not yet implemented (ML-KEM, ML-DSA, SLH-DSA)
+1. **ML-KEM on macOS/ARM**: `pqcrypto-kyber` v0.5 has a compilation bug preventing ML-KEM from building on AArch64. The crate should use the "clean" implementation but AVX2 functions are incorrectly referenced. ML-DSA and SLH-DSA work fine.
 2. **RSA Support**: Dependency included but not implemented
 3. **PKIX/PKCS#8 Serialization**: Not yet implemented (keys use custom formats)
 4. **TPM/HSM Integration**: Not yet implemented
 5. **Short Buffer Encryption**: Placeholder only
 6. **Multi-level Hashing**: Not yet implemented
+7. **PQC Key Reconstruction**: `from_private_key_bytes()` for PQC keys cannot derive public keys (limitation of underlying crates)
 
 ### Planned Enhancements
 
-1. Post-quantum cryptography support (high priority)
+1. Monitor `pqcrypto-kyber` for fixes to AArch64 compilation issues
 2. RSA key type implementation (medium priority)
 3. PKIX/PKCS#8 key serialization (medium priority)
 4. TPM/HSM backend support (low priority)
 5. Performance benchmarking and optimization
-6. Expanded API documentation with more examples
+6. Additional SLH-DSA variants (f, simple variants)
+7. Hardware acceleration support for PQC algorithms
 
 ## Compatibility with gobottle
 
