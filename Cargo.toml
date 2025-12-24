@@ -41,6 +41,7 @@ pem = "2.0"
 # Enable signatures only: cargo build --features post-quantum
 # Enable everything: cargo build --features post-quantum,ml-kem
 ml-kem = { version = "0.3.0-pre.2", optional = true }  # ML-KEM (FIPS 203) - requires ml-kem feature
+zerocopy = { version = "0.7", optional = true }  # For ml-kem IntoBytes trait
 pqcrypto-dilithium = { version = "0.5", optional = true }  # ML-DSA (CRYSTALS-Dilithium)
 pqcrypto-sphincsplus = { version = "0.5", optional = true }  # SLH-DSA (SPHINCS+)
 pqcrypto-traits = { version = "0.3", optional = true }  # Traits for PQC types
@@ -48,7 +49,7 @@ pqcrypto-traits = { version = "0.3", optional = true }  # Traits for PQC types
 [features]
 default = []
 post-quantum = ["pqcrypto-dilithium", "pqcrypto-sphincsplus", "pqcrypto-traits"]  # ML-DSA and SLH-DSA only
-ml-kem = ["dep:ml-kem"]  # ML-KEM encryption (pure Rust, works on all platforms including macOS/ARM)
+ml-kem = ["dep:ml-kem", "dep:zerocopy"]  # ML-KEM encryption (pure Rust, works on all platforms including macOS/ARM)
 
 [dev-dependencies]
 criterion = "0.5"
