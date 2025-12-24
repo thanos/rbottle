@@ -77,3 +77,7 @@ path = "tests/pkix_test.rs"
 [[test]]
 name = "rsa"
 path = "tests/rsa_test.rs"
+
+[[test]]
+name = "short_buffer"
+path = "tests/short_buffer_test.rs"

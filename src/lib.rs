@@ -99,3 +99,6 @@ pub use keys::{MlKem768Key, MlKem1024Key};
 /// PKIX/PKCS#8 key serialization
 pub use pkix::{KeyType, marshal_pkix_public_key, marshal_pkix_public_key_pem, marshal_pkix_public_key_with_type, parse_pkix_public_key, parse_pkix_public_key_pem, marshal_pkcs8_private_key, marshal_pkcs8_private_key_pem, parse_pkcs8_private_key, parse_pkcs8_private_key_pem};
 
+/// Utility functions
+pub use utils::{mem_clr, encrypt_short_buffer, decrypt_short_buffer};
+
