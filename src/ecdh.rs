@@ -5,9 +5,9 @@ use rand::{CryptoRng, RngCore};
 use x25519_dalek::{PublicKey as X25519PublicKey, StaticSecret};
 
 #[cfg(feature = "ml-kem")]
-use ml_kem::{EncodedSizeUser, KemCore, kem::{Kem, Encapsulate, Decapsulate}, MlKem768Params, MlKem1024Params};
+use ml_kem::{EncodedSizeUser, KemCore, kem::Kem, MlKem768Params, MlKem1024Params};
 #[cfg(feature = "ml-kem")]
-use ml_kem::hybrid_array::{Array, typenum};
+use hybrid_array::{Array, sizes::{U1088, U1568}};
 #[cfg(feature = "ml-kem")]
 use zerocopy::AsBytes;
 
@@ -530,10 +530,9 @@ pub fn mlkem768_decrypt(
     let mlkem_ct_bytes = &ciphertext[..CT_SIZE];
     let ct_array: [u8; CT_SIZE] = mlkem_ct_bytes.try_into()
         .map_err(|_| BottleError::InvalidFormat)?;
-    // Ciphertext type: infer from the encapsulate return type
-    // Use Array with typenum constant for the size
+    // Ciphertext type: use Array with size constant from hybrid_array::sizes
     // ML-KEM-768 ciphertext is 1088 bytes
-    let mlkem_ct = Array::<u8, typenum::U1088>::clone_from_slice(&ct_array);
+    let mlkem_ct = Array::<u8, U1088>::clone_from_slice(&ct_array);
     let aes_ct = &ciphertext[CT_SIZE..];
     
     // Decapsulate to get shared secret
@@ -635,9 +634,9 @@ pub fn mlkem1024_decrypt(
     }
     let ct_array: [u8; CT_SIZE] = ciphertext[..CT_SIZE].try_into()
         .map_err(|_| BottleError::InvalidFormat)?;
-    // Ciphertext type: use Array with typenum constant
+    // Ciphertext type: use Array with size constant from hybrid_array::sizes
     // ML-KEM-1024 ciphertext is 1568 bytes
-    let mlkem_ct = Array::<u8, typenum::U1568>::clone_from_slice(&ct_array);
+    let mlkem_ct = Array::<u8, U1568>::clone_from_slice(&ct_array);
     let aes_ct = &ciphertext[CT_SIZE..];
     
     // Decapsulate to get shared secret
